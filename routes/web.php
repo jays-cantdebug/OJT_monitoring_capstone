@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Dean\PendingApprovalController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -62,9 +63,9 @@ Route::prefix('dean')->name('dean.')->middleware(['auth', 'approved', 'role:dean
         return view('dean.live-map');
     })->name('live-map');
 
-    Route::get('/pending-approvals', function () {
-        return view('dean.pending-approvals');
-    })->name('pending-approvals');
+    Route::get('/pending-approvals', [PendingApprovalController::class, 'index'])->name('pending-approvals');
+    Route::post('/pending-approvals/{user}/approve', [PendingApprovalController::class, 'approve'])->name('pending-approvals.approve');
+    Route::post('/pending-approvals/{user}/reject', [PendingApprovalController::class, 'reject'])->name('pending-approvals.reject');
 
     Route::get('/students', function () {
         return view('dean.students');

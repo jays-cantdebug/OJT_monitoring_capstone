@@ -1,4 +1,10 @@
-@props(['title' => 'Are you sure?', 'confirmText' => 'Confirm', 'confirmClass' => 'bg-gray-900 hover:bg-gray-700'])
+@props([
+    'title' => 'Are you sure?',
+    'confirmText' => 'Confirm',
+    'confirmClass' => 'bg-gray-900 hover:bg-gray-700',
+    'action' => null,
+    'method' => 'POST',
+])
 
 <div x-data="{ open: false }" class="inline-block">
     <div x-on:click="open = true" class="inline-block cursor-pointer">
@@ -18,9 +24,22 @@
                 <button type="button" x-on:click="open = false" class="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">
                     Cancel
                 </button>
-                <button type="button" x-on:click="open = false" class="rounded-md px-3 py-2 text-sm font-medium text-white {{ $confirmClass }}">
-                    {{ $confirmText }}
-                </button>
+
+                @if ($action)
+                    <form method="POST" action="{{ $action }}">
+                        @csrf
+                        @if (strtoupper($method) !== 'POST')
+                            @method($method)
+                        @endif
+                        <button type="submit" class="rounded-md px-3 py-2 text-sm font-medium text-white {{ $confirmClass }}">
+                            {{ $confirmText }}
+                        </button>
+                    </form>
+                @else
+                    <button type="button" x-on:click="open = false" class="rounded-md px-3 py-2 text-sm font-medium text-white {{ $confirmClass }}">
+                        {{ $confirmText }}
+                    </button>
+                @endif
             </div>
         </div>
     </div>

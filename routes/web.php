@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Dean\PendingApprovalController;
+use App\Http\Controllers\Student\DashboardController;
+use App\Http\Controllers\Student\DtrController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -25,21 +27,17 @@ Route::get('/pending-approval', function () {
 })->middleware('auth')->name('pending-approval');
 
 Route::prefix('student')->name('student.')->middleware(['auth', 'approved', 'role:student_intern'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('student.dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/time', function () {
-        return view('student.time');
-    })->name('time');
+    Route::get('/time', [DtrController::class, 'show'])->name('time');
+    Route::post('/time/clock-in', [DtrController::class, 'clockIn'])->name('time.clock-in');
+    Route::post('/time/clock-out', [DtrController::class, 'clockOut'])->name('time.clock-out');
 
     Route::get('/reports', function () {
         return view('student.reports');
     })->name('reports');
 
-    Route::get('/attendance', function () {
-        return view('student.attendance');
-    })->name('attendance');
+    Route::get('/attendance', [DtrController::class, 'history'])->name('attendance');
 
     Route::get('/internship-info', function () {
         return view('student.internship-info');

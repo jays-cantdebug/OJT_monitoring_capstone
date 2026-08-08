@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -66,5 +67,15 @@ class User extends Authenticatable
     public function isPending(): bool
     {
         return $this->status === 'pending';
+    }
+
+    public function dtrEntries(): HasMany
+    {
+        return $this->hasMany(DtrEntry::class);
+    }
+
+    public function openDtrEntry(): ?DtrEntry
+    {
+        return $this->dtrEntries()->whereNull('time_out')->first();
     }
 }

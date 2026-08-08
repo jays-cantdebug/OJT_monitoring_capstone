@@ -19,7 +19,7 @@ This project installs `laravel/framework v11.55.0` — inside the affected `>=11
 
 **Mitigation applied:** `app/Rules/NoCrlfCharacters.php` — a custom validation rule that rejects any input containing a literal CR (`\r`), LF (`\n`), or their URL-encoded forms (`%0d`, `%0a`), case-insensitively. It must be composed alongside Laravel's built-in `email` rule (e.g. `['required', 'email', new NoCrlfCharacters]`) on every form field that accepts an email address — starting with the student self-registration form (Confirmed Product Decision #1) once it's built. This acts as an independent second layer, not reliant on Laravel's own `email` rule being fixed.
 
-**Action item:** the rule class exists now, but nothing calls it yet — no registration form exists at this point in the build order (frontend-first, see master prompt's suggested build order). Wire it into the registration validation rules when that page's backend logic is implemented, not just leave it sitting unused.
+**Status update (Step 5, Auth backend wiring):** now wired in. `app/Http/Requests/Auth/RegisterRequest.php` composes it alongside `email` on the registration form's email field: `['required', 'string', 'email', 'max:255', 'unique:users,email', new NoCrlfCharacters]`. No longer sitting unused.
 
 **Related advisories found in the same `composer audit` run, same installed version, also unpatched on 11.x:**
 - `PKSA-3r5d-mb8f-1qw9` (High) — same CRLF-in-email-validation root cause, no CVE assigned yet.

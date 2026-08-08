@@ -6,16 +6,22 @@
     <h2 class="text-lg font-semibold text-gray-900 mb-1">Student Intern Registration</h2>
     <p class="text-sm text-gray-500 mb-6">Your account will need Dean approval before you can log in.</p>
 
-    <form class="space-y-5">
+    <form method="POST" action="{{ route('register') }}" class="space-y-5">
+        @csrf
+
         <div>
             <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
             <input
                 type="text"
                 id="name"
                 name="name"
+                value="{{ old('name') }}"
                 required
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-400 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
             >
+            @error('name')
+                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+            @enderror
         </div>
 
         <div>
@@ -24,9 +30,13 @@
                 type="email"
                 id="email"
                 name="email"
+                value="{{ old('email') }}"
                 required
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-400 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
             >
+            @error('email')
+                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+            @enderror
         </div>
 
         <div>
@@ -38,6 +48,9 @@
                 required
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-400 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
             >
+            @error('password')
+                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+            @enderror
         </div>
 
         <div>

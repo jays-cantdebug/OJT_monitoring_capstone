@@ -42,9 +42,12 @@
             </nav>
 
             <div class="px-3 py-4 border-t border-gray-800">
-                <a href="#" class="block rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white">
-                    Logout
-                </a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="w-full text-left block rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white">
+                        Logout
+                    </button>
+                </form>
             </div>
         </aside>
 
@@ -52,7 +55,7 @@
             <header class="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
                 <h1 class="text-lg font-semibold text-gray-900">@yield('title', 'Dashboard')</h1>
                 <div class="text-sm text-gray-600">
-                    Juan Dela Cruz
+                    {{ auth()->user()->name }}
                 </div>
             </header>
 

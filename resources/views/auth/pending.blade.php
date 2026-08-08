@@ -16,8 +16,11 @@
             You'll be able to log in as soon as that happens — no further action is needed from you right now.
         </p>
 
-        <a href="{{ route('login') }}" class="mt-6 inline-block text-sm font-medium text-gray-900 hover:underline">
-            Back to Log In
-        </a>
+        <form method="POST" action="{{ route('logout') }}" class="mt-6">
+            @csrf
+            <button type="submit" class="text-sm font-medium text-gray-900 hover:underline">
+                Log Out
+            </button>
+        </form>
     </div>
 @endsection

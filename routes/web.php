@@ -1,24 +1,29 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/login', function () {
-    return view('auth.login');
-})->name('login');
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'login'])->name('login');
+    Route::post('/login', [AuthController::class, 'authenticate']);
 
-Route::get('/register', function () {
-    return view('auth.register');
-})->name('register');
+    Route::get('/register', [AuthController::class, 'create'])->name('register');
+    Route::post('/register', [AuthController::class, 'store']);
+});
+
+Route::post('/logout', [AuthController::class, 'destroy'])
+    ->middleware('auth')
+    ->name('logout');
 
 Route::get('/pending-approval', function () {
     return view('auth.pending');
-})->name('pending-approval');
+})->middleware('auth')->name('pending-approval');
 
-Route::prefix('student')->name('student.')->group(function () {
+Route::prefix('student')->name('student.')->middleware(['auth', 'approved', 'role:student_intern'])->group(function () {
     Route::get('/dashboard', function () {
         return view('student.dashboard');
     })->name('dashboard');
@@ -48,7 +53,7 @@ Route::prefix('student')->name('student.')->group(function () {
     })->name('profile');
 });
 
-Route::prefix('dean')->name('dean.')->group(function () {
+Route::prefix('dean')->name('dean.')->middleware(['auth', 'approved', 'role:dean'])->group(function () {
     Route::get('/dashboard', function () {
         return view('dean.dashboard');
     })->name('dashboard');

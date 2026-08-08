@@ -47,4 +47,24 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function isDean(): bool
+    {
+        return $this->role === 'dean';
+    }
+
+    public function isStudentIntern(): bool
+    {
+        return $this->role === 'student_intern';
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status === 'approved';
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
+    }
 }

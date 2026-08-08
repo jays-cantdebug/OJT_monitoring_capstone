@@ -78,4 +78,9 @@ class User extends Authenticatable
     {
         return $this->dtrEntries()->whereNull('time_out')->first();
     }
+
+    public function accomplishmentReports(): HasMany
+    {
+        return $this->hasMany(AccomplishmentReport::class);
+    }
 }

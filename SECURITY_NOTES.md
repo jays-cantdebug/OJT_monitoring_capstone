@@ -26,3 +26,11 @@ This project installs `laravel/framework v11.55.0` — inside the affected `>=11
 - `PKSA-m5cs-t1y6-qpcs` (Medium) — temporary signed URL path confusion. Different root cause. No mitigation applied yet — this project doesn't currently use signed URLs, so exposure is low, but revisit if signed URLs get used later (e.g. for report-export links).
 
 **Before the thesis defense:** re-run `composer audit` to check whether Laravel has backported a fix to the 11.x branch since this note was written.
+
+## Dean Account Provisioning — Seeded, Not Self-Registered
+
+**Status:** Intentional, by design — not an oversight.
+
+Only Student Interns self-register (Confirmed Product Decision #1). There is no Dean self-registration flow and none is planned — the paper's scope names exactly two roles with the Dean approving Student Intern accounts, which implies the Dean role must already exist before any approval can happen. The first (and for now, only) Dean account is created directly via `database/seeders/DeanSeeder.php` (`dean@normi.edu.ph`, dev-only placeholder password), bypassing the registration -> pending -> approval pipeline entirely, since that pipeline doesn't apply to this role.
+
+**Action item:** the seeded password is a local-dev placeholder and must be changed before any real deployment or live demo.

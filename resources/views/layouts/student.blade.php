@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@yield('title', 'NORMI OJT Monitoring')</title>
+
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+<body class="font-sans antialiased bg-gray-50 text-gray-900">
+    <div class="min-h-screen flex">
+        <aside class="w-64 shrink-0 bg-gray-900 text-gray-300 flex flex-col">
+            <div class="px-6 py-5 border-b border-gray-800">
+                <p class="text-white font-semibold leading-tight">NORMI OJT</p>
+                <p class="text-xs text-gray-400 leading-tight">Student Intern</p>
+            </div>
+
+            <nav class="flex-1 px-3 py-4 space-y-1">
+                @php
+                    $navItems = [
+                        'student.dashboard' => 'Dashboard',
+                        'student.time' => 'Time In/Out',
+                        'student.reports' => 'Accomplishment Reports',
+                        'student.attendance' => 'Attendance History',
+                        'student.internship-info' => 'Internship Info',
+                        'student.notifications' => 'Notifications',
+                        'student.profile' => 'Profile',
+                    ];
+                @endphp
+
+                @foreach ($navItems as $routeName => $label)
+                    <a
+                        href="{{ route($routeName) }}"
+                        class="block rounded-md px-3 py-2 text-sm font-medium transition {{ request()->routeIs($routeName) ? 'bg-gray-800 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}"
+                    >
+                        {{ $label }}
+                    </a>
+                @endforeach
+            </nav>
+
+            <div class="px-3 py-4 border-t border-gray-800">
+                <a href="#" class="block rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white">
+                    Logout
+                </a>
+            </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col min-w-0">
+            <header class="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
+                <h1 class="text-lg font-semibold text-gray-900">@yield('title', 'Dashboard')</h1>
+                <div class="text-sm text-gray-600">
+                    Juan Dela Cruz
+                </div>
+            </header>
+
+            <main class="flex-1 px-8 py-6">
+                @yield('content')
+            </main>
+        </div>
+    </div>
+</body>
+</html>

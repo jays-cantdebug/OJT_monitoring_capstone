@@ -42,4 +42,14 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    /**
+     * Indicate that the user is a Dean.
+     */
+    public function dean(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'dean',
+        ]);
+    }
 }

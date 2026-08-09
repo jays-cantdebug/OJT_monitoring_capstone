@@ -93,10 +93,4 @@
             </div>
         </div>
     </div>
-
-    <div class="mt-6 rounded-xl bg-black p-5 font-mono text-xs text-gold shadow-sm">
-        <p class="text-gold/50"># Dean Reports MySQL Console</p>
-        <p class="mt-2">CONNECTION: root@mysql-dean-cluster | SSL: Active</p>
-        <p class="mt-1 text-gold/50">// Decorative console — no live database connection is displayed here.</p>
-    </div>
 @endsection

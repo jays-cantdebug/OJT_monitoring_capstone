@@ -101,7 +101,7 @@
 
                 <button
                     type="submit"
-                    class="inline-flex items-center gap-2 justify-center rounded-md bg-success px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-success/90"
+                    class="inline-flex items-center gap-2 justify-center rounded-md bg-gold px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-gold/90"
                 >
                     <x-heroicon-o-check class="h-4 w-4" />
                     Save Changes
@@ -160,7 +160,7 @@
 
                 <button
                     type="submit"
-                    class="inline-flex items-center gap-2 justify-center rounded-md bg-success px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-success/90"
+                    class="inline-flex items-center gap-2 justify-center rounded-md bg-gold px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-gold/90"
                 >
                     <x-heroicon-o-check class="h-4 w-4" />
                     Update Password

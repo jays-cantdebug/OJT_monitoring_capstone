@@ -50,9 +50,13 @@
 
             <div class="px-3 py-4 border-t border-white/10">
                 <div class="flex items-center gap-3 px-2 py-2">
-                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold text-sm font-bold text-navy">
-                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                    </div>
+                    @if (auth()->user()->avatarUrl())
+                        <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="h-9 w-9 shrink-0 rounded-full object-cover">
+                    @else
+                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold text-sm font-bold text-navy">
+                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                        </div>
+                    @endif
                     <div class="min-w-0">
                         <p class="truncate text-sm font-medium text-white">{{ auth()->user()->name }}</p>
                         <p class="truncate text-[11px] text-white/40">School of Computing</p>

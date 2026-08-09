@@ -6,14 +6,27 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div class="space-y-4">
             <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-5 text-center">
-                <div class="relative mx-auto mb-3 h-20 w-20">
-                    <div class="flex h-20 w-20 items-center justify-center rounded-full bg-success/10 text-2xl font-bold text-success">
-                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                <form method="POST" action="{{ route('dean.profile.update') }}" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="relative mx-auto mb-3 h-20 w-20">
+                        @if (auth()->user()->avatarUrl())
+                            <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="h-20 w-20 rounded-full object-cover">
+                        @else
+                            <div class="flex h-20 w-20 items-center justify-center rounded-full bg-success/10 text-2xl font-bold text-success">
+                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                            </div>
+                        @endif
+                        <label for="avatar" class="absolute bottom-0 right-0 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-navy text-white ring-2 ring-white hover:bg-navy/90">
+                            <x-heroicon-o-camera class="h-3.5 w-3.5" />
+                            <input type="file" id="avatar" name="avatar" accept="image/*" class="hidden" onchange="this.form.submit()">
+                        </label>
                     </div>
-                    <span class="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-navy text-white ring-2 ring-white">
-                        <x-heroicon-o-camera class="h-3.5 w-3.5" />
-                    </span>
-                </div>
+                </form>
+                @error('avatar')
+                    <p class="mb-2 text-xs text-danger">{{ $message }}</p>
+                @enderror
                 <p class="font-bold text-navy">{{ auth()->user()->name }}</p>
                 <span class="mt-2 inline-block rounded-full bg-gold/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-gold">Dean</span>
             </div>

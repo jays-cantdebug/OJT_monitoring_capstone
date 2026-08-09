@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -23,6 +24,7 @@ class User extends Authenticatable
         'name',
         'email',
         'phone',
+        'avatar_path',
         'password',
         'role',
     ];
@@ -58,6 +60,11 @@ class User extends Authenticatable
     public function isStudentIntern(): bool
     {
         return $this->role === 'student_intern';
+    }
+
+    public function avatarUrl(): ?string
+    {
+        return $this->avatar_path ? Storage::disk('public')->url($this->avatar_path) : null;
     }
 
     public function dtrEntries(): HasMany

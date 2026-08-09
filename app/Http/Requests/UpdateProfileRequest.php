@@ -18,6 +18,7 @@ class UpdateProfileRequest extends FormRequest
     {
         return [
             'phone' => ['nullable', 'string', 'max:20'],
+            'avatar' => ['nullable', 'image', 'max:2048'],
         ];
     }
 }

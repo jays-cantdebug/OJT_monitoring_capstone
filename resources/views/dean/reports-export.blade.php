@@ -3,27 +3,32 @@
 @section('title', 'Reports / Export')
 
 @section('content')
-    <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-200 p-6">
-        <h2 class="text-sm font-semibold text-gray-900 mb-4">Attendance Summary Report</h2>
+    <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-100 p-6">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                <x-heroicon-o-chart-bar class="h-5 w-5" />
+            </div>
+            <h2 class="text-sm font-semibold text-gray-900">Attendance Summary Report</h2>
+        </div>
 
         <div class="flex flex-wrap items-end gap-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700">From</label>
-                <input type="date" class="mt-1 rounded-md border-gray-300 text-sm shadow-sm focus:border-blue-400 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <label class="block text-xs font-bold uppercase tracking-wide text-gray-500">From</label>
+                <input type="date" class="mt-1.5 rounded-md border-0 bg-[#eef2f7] text-sm py-2.5 px-3 text-gray-900 focus:ring-2 focus:ring-blue-950/40">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700">To</label>
-                <input type="date" class="mt-1 rounded-md border-gray-300 text-sm shadow-sm focus:border-blue-400 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <label class="block text-xs font-bold uppercase tracking-wide text-gray-500">To</label>
+                <input type="date" class="mt-1.5 rounded-md border-0 bg-[#eef2f7] text-sm py-2.5 px-3 text-gray-900 focus:ring-2 focus:ring-blue-950/40">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700">Student</label>
-                <select class="mt-1 rounded-md border-gray-300 text-sm shadow-sm focus:border-blue-400 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <label class="block text-xs font-bold uppercase tracking-wide text-gray-500">Student</label>
+                <select class="mt-1.5 rounded-md border-0 bg-[#eef2f7] text-sm py-2.5 px-3 text-gray-900 focus:ring-2 focus:ring-blue-950/40">
                     <option>All Students</option>
                     <option>Juan Dela Cruz</option>
                     <option>Maria Reyes</option>
                 </select>
             </div>
-            <button type="button" class="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700">
+            <button type="button" class="rounded-md bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:from-amber-600 hover:to-orange-600">
                 Export PDF
             </button>
         </div>

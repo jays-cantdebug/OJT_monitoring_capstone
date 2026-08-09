@@ -23,7 +23,6 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'status',
     ];
 
     /**
@@ -57,16 +56,6 @@ class User extends Authenticatable
     public function isStudentIntern(): bool
     {
         return $this->role === 'student_intern';
-    }
-
-    public function isApproved(): bool
-    {
-        return $this->status === 'approved';
-    }
-
-    public function isPending(): bool
-    {
-        return $this->status === 'pending';
     }
 
     public function dtrEntries(): HasMany

@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Http\Requests\Auth;
+namespace App\Http\Requests\Dean;
 
 use App\Rules\NoCrlfCharacters;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Password;
 
-class RegisterRequest extends FormRequest
+class CreateStudentAccountRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -21,7 +20,6 @@ class RegisterRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email', new NoCrlfCharacters],
-            'password' => ['required', 'confirmed', Password::defaults()],
         ];
     }
 }

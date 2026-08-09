@@ -1,0 +1,62 @@
+<?php
+
+namespace App\Http\Controllers\Dean;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Dean\CreateStudentAccountRequest;
+use App\Models\User;
+use Illuminate\Support\Str;
+use Illuminate\View\View;
+
+class StudentAccountController extends Controller
+{
+    public function index()
+    {
+        return view('dean.students', [
+            'students' => $this->students(),
+        ]);
+    }
+
+    public function create()
+    {
+        return view('dean.students.create');
+    }
+
+    public function store(CreateStudentAccountRequest $request): View
+    {
+        $password = Str::password(12);
+
+        $student = User::create([
+            'name' => $request->validated('name'),
+            'email' => $request->validated('email'),
+            'password' => $password,
+            'role' => 'student_intern',
+        ]);
+
+        // Rendered directly rather than flashed through a redirect: a
+        // one-time credential like this must never round-trip through a
+        // session flash (fragile across server/browser timing) or a URL
+        // query string (leaks into history/logs). Rendering it straight
+        // into this response keeps it server-side and one-shot for real.
+        return view('dean.students', [
+            'students' => $this->students(),
+            'created' => [
+                'name' => $student->name,
+                'email' => $student->email,
+                'password' => $password,
+            ],
+        ]);
+    }
+
+    private function students()
+    {
+        return User::where('role', 'student_intern')
+            ->orderBy('name')
+            ->get()
+            ->map(fn (User $student) => [
+                'id' => $student->id,
+                'name' => $student->name,
+                'onDuty' => $student->openDtrEntry() !== null,
+            ]);
+    }
+}

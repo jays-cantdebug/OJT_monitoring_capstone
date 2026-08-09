@@ -19,7 +19,6 @@ class DeanSeeder extends Seeder
                 'name' => 'NORMI Dean',
                 'password' => Hash::make('password'),
                 'role' => 'dean',
-                'status' => 'approved',
                 'email_verified_at' => now(),
             ]
         );

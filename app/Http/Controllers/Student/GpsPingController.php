@@ -6,8 +6,10 @@ use App\Events\GpsPingBroadcast;
 use App\Http\Controllers\Controller;
 use App\Models\GpsPing;
 use App\Support\CoordinateRules;
+use Illuminate\Broadcasting\BroadcastException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class GpsPingController extends Controller
 {
@@ -33,7 +35,17 @@ class GpsPingController extends Controller
             'recorded_at' => now(),
         ]);
 
-        broadcast(new GpsPingBroadcast($ping));
+        // The ping is already saved above; a Reverb outage should not fail
+        // the request, since the Live Map is a live-tracking convenience,
+        // not the source of truth for whether the ping was recorded.
+        try {
+            broadcast(new GpsPingBroadcast($ping));
+        } catch (BroadcastException $e) {
+            Log::warning('GPS ping broadcast failed, ping was still saved.', [
+                'ping_id' => $ping->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return response()->json(['status' => 'ok']);
     }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DtrEntry extends Model
 {
@@ -28,5 +29,19 @@ class DtrEntry extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function durationInSeconds(): ?int
+    {
+        if (! $this->time_out) {
+            return null;
+        }
+
+        return (int) abs($this->time_in->diffInSeconds($this->time_out));
+    }
+
+    public function gpsPings(): HasMany
+    {
+        return $this->hasMany(GpsPing::class);
     }
 }

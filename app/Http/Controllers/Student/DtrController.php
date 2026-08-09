@@ -29,7 +29,7 @@ class DtrController extends Controller
 
         $totalSecondsThisMonth = $entries
             ->filter(fn (DtrEntry $entry) => $entry->time_out && $entry->time_in->isCurrentMonth())
-            ->sum(fn (DtrEntry $entry) => abs($entry->time_in->diffInSeconds($entry->time_out)));
+            ->sum(fn (DtrEntry $entry) => $entry->durationInSeconds());
 
         return view('student.attendance', [
             'entries' => $entries,

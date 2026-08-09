@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dean;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dean\CreateStudentAccountRequest;
 use App\Models\User;
+use App\Notifications\StudentAccountCreatedNotification;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -33,6 +34,8 @@ class StudentAccountController extends Controller
             'role' => 'student_intern',
         ]);
 
+        $student->notify(new StudentAccountCreatedNotification);
+
         // Rendered directly rather than flashed through a redirect: a
         // one-time credential like this must never round-trip through a
         // session flash (fragile across server/browser timing) or a URL
@@ -51,11 +54,13 @@ class StudentAccountController extends Controller
     private function students()
     {
         return User::where('role', 'student_intern')
+            ->with('studentProfile')
             ->orderBy('name')
             ->get()
             ->map(fn (User $student) => [
                 'id' => $student->id,
                 'name' => $student->name,
+                'company' => $student->studentProfile?->company_name,
                 'onDuty' => $student->openDtrEntry() !== null,
             ]);
     }

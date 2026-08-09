@@ -1,9 +1,9 @@
 @props([
     'title' => 'Are you sure?',
     'confirmText' => 'Confirm',
-    'confirmClass' => 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600',
+    'confirmClass' => 'bg-gold hover:bg-gold/90',
     'icon' => null,
-    'iconClass' => 'bg-amber-100 text-amber-600',
+    'iconClass' => 'bg-gold/10 text-gold',
     'action' => null,
     'method' => 'POST',
 ])
@@ -34,7 +34,7 @@
             x-transition:leave="transition ease-in duration-150"
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
-            class="relative bg-white rounded-xl shadow-xl ring-1 ring-gray-100 max-w-sm w-full p-6"
+            class="relative bg-white rounded-xl shadow-xl ring-1 ring-light-gray max-w-sm w-full p-6"
         >
             @if ($icon)
                 <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-full {{ $iconClass }}">
@@ -42,13 +42,13 @@
                 </div>
             @endif
 
-            <h3 class="font-bold text-gray-900">{{ $title }}</h3>
-            <div class="mt-2 text-sm text-gray-600">
+            <h3 class="font-bold text-navy">{{ $title }}</h3>
+            <div class="mt-2 text-sm text-black/60">
                 {{ $slot }}
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
-                <button type="button" x-on:click="open = false" class="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">
+                <button type="button" x-on:click="open = false" class="rounded-md px-3 py-2 text-sm font-medium text-black hover:bg-light-gray/40">
                     Cancel
                 </button>
 

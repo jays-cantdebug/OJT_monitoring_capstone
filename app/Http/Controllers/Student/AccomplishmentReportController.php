@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\AccomplishmentReport;
+use App\Models\User;
+use App\Notifications\ReportSubmittedNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 
 class AccomplishmentReportController extends Controller
 {
@@ -51,12 +54,15 @@ class AccomplishmentReportController extends Controller
 
         $photoPath = $request->file('photo')->store('accomplishment-reports', 'public');
 
-        AccomplishmentReport::create([
+        $report = AccomplishmentReport::create([
             'user_id' => $user->id,
             'report_date' => today(),
             'description' => $validated['description'],
             'photo_path' => $photoPath,
         ]);
+
+        $deans = User::where('role', 'dean')->get();
+        Notification::send($deans, new ReportSubmittedNotification($report));
 
         return redirect()->route('student.reports')->with('status', 'Your report was submitted.');
     }

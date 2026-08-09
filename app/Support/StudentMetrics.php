@@ -1,0 +1,160 @@
+<?php
+
+namespace App\Support;
+
+use App\Models\AccomplishmentReport;
+use App\Models\DtrEntry;
+use App\Models\User;
+use Illuminate\Support\Collection;
+
+/**
+ * Aggregate queries over all student_intern users, shared by the Dean
+ * Dashboard and Attendance Records pages so the same numbers mean the
+ * same thing everywhere they're shown.
+ */
+class StudentMetrics
+{
+    public static function assignedCount(): int
+    {
+        return User::where('role', 'student_intern')->count();
+    }
+
+    public static function activeCount(): int
+    {
+        return User::where('role', 'student_intern')->whereHas('dtrEntries')->count();
+    }
+
+    public static function currentlyOnDutyCount(): int
+    {
+        return DtrEntry::whereNull('time_out')
+            ->whereHas('user', fn ($query) => $query->where('role', 'student_intern'))
+            ->distinct('user_id')
+            ->count('user_id');
+    }
+
+    public static function presentTodayCount(): int
+    {
+        return DtrEntry::whereDate('time_in', today())
+            ->whereHas('user', fn ($query) => $query->where('role', 'student_intern'))
+            ->distinct('user_id')
+            ->count('user_id');
+    }
+
+    public static function pendingReportsCount(): int
+    {
+        return User::where('role', 'student_intern')
+            ->whereHas('dtrEntries', fn ($query) => $query->whereDate('time_in', today())->whereNotNull('time_out'))
+            ->whereDoesntHave('accomplishmentReports', fn ($query) => $query->whereDate('report_date', today()))
+            ->count();
+    }
+
+    public static function totalHoursLogged(): int
+    {
+        return intdiv(self::completedSeconds(), 3600);
+    }
+
+    public static function hoursLoggedToday(): int
+    {
+        return intdiv(self::completedSeconds(fn ($query) => $query->whereDate('time_in', today())), 3600);
+    }
+
+    /**
+     * Average, across students with at least one eligible day, of
+     * (reports submitted / days with a completed DTR entry).
+     */
+    public static function avgComplianceRatePercent(): int
+    {
+        $students = User::where('role', 'student_intern')->get();
+
+        $rates = $students->map(function (User $student) {
+            $eligibleDays = $student->dtrEntries()
+                ->whereNotNull('time_out')
+                ->get()
+                ->map(fn (DtrEntry $entry) => $entry->time_in->toDateString())
+                ->unique()
+                ->count();
+
+            if ($eligibleDays === 0) {
+                return null;
+            }
+
+            $submittedReports = $student->accomplishmentReports()->count();
+
+            return min($submittedReports / $eligibleDays, 1) * 100;
+        })->filter(fn ($rate) => $rate !== null);
+
+        if ($rates->isEmpty()) {
+            return 0;
+        }
+
+        return (int) round($rates->avg());
+    }
+
+    public static function recentlyAdded(int $limit = 3): Collection
+    {
+        return User::where('role', 'student_intern')
+            ->orderByDesc('created_at')
+            ->limit($limit)
+            ->get()
+            ->map(fn (User $student) => [
+                'name' => $student->name,
+                'date' => $student->created_at->format('M j, Y'),
+            ]);
+    }
+
+    /**
+     * Merges the most recent DTR entries and accomplishment reports across
+     * all students into one reverse-chronological feed. There's no
+     * dedicated activity-log table, so this is derived live from the two
+     * event-producing tables that already exist.
+     */
+    public static function recentActivity(int $limit = 5): Collection
+    {
+        $dtrEvents = DtrEntry::with('user')
+            ->whereHas('user', fn ($query) => $query->where('role', 'student_intern'))
+            ->orderByDesc('time_in')
+            ->limit($limit)
+            ->get()
+            ->map(fn (DtrEntry $entry) => [
+                'text' => "{$entry->user->name} timed in for their shift.",
+                'time' => $entry->time_in,
+                'icon' => 'clock',
+                'badge' => 'bg-success/10 text-success',
+            ]);
+
+        $reportEvents = AccomplishmentReport::with('user')
+            ->whereHas('user', fn ($query) => $query->where('role', 'student_intern'))
+            ->orderByDesc('created_at')
+            ->limit($limit)
+            ->get()
+            ->map(fn (AccomplishmentReport $report) => [
+                'text' => "{$report->user->name} submitted an accomplishment report.",
+                'time' => $report->created_at,
+                'icon' => 'document-text',
+                'badge' => 'bg-gold/10 text-gold',
+            ]);
+
+        return $dtrEvents->concat($reportEvents)
+            ->sortByDesc('time')
+            ->take($limit)
+            ->map(fn (array $event) => [
+                'text' => $event['text'],
+                'time' => $event['time']->diffForHumans(),
+                'icon' => $event['icon'],
+                'badge' => $event['badge'],
+            ])
+            ->values();
+    }
+
+    private static function completedSeconds(?\Closure $scope = null): int
+    {
+        $query = DtrEntry::whereNotNull('time_out')
+            ->whereHas('user', fn ($query) => $query->where('role', 'student_intern'));
+
+        if ($scope) {
+            $scope($query);
+        }
+
+        return $query->get()->sum(fn (DtrEntry $entry) => $entry->durationInSeconds());
+    }
+}

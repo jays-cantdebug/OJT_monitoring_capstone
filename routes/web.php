@@ -1,10 +1,21 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Dean\AccomplishmentReportController as DeanAccomplishmentReportController;
+use App\Http\Controllers\Dean\AttendanceController;
+use App\Http\Controllers\Dean\DashboardController as DeanDashboardController;
+use App\Http\Controllers\Dean\LiveMapController;
+use App\Http\Controllers\Dean\NotificationController as DeanNotificationController;
+use App\Http\Controllers\Dean\ReportExportController;
 use App\Http\Controllers\Dean\StudentAccountController;
+use App\Http\Controllers\Dean\StudentProfileController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Student\AccomplishmentReportController;
 use App\Http\Controllers\Student\DashboardController;
 use App\Http\Controllers\Student\DtrController;
+use App\Http\Controllers\Student\GpsPingController;
+use App\Http\Controllers\Student\InternshipInfoController;
+use App\Http\Controllers\Student\NotificationController as StudentNotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -31,54 +42,49 @@ Route::prefix('student')->name('student.')->middleware(['auth', 'role:student_in
     Route::post('/time/clock-in', [DtrController::class, 'clockIn'])->name('time.clock-in');
     Route::post('/time/clock-out', [DtrController::class, 'clockOut'])->name('time.clock-out');
 
+    Route::post('/gps-pings', [GpsPingController::class, 'store'])->name('gps-pings.store');
+
     Route::get('/reports', [AccomplishmentReportController::class, 'index'])->name('reports');
     Route::post('/reports', [AccomplishmentReportController::class, 'store']);
 
     Route::get('/attendance', [DtrController::class, 'history'])->name('attendance');
 
-    Route::get('/internship-info', function () {
-        return view('student.internship-info');
-    })->name('internship-info');
+    Route::get('/internship-info', [InternshipInfoController::class, 'show'])->name('internship-info');
+    Route::put('/internship-info', [InternshipInfoController::class, 'update']);
 
-    Route::get('/notifications', function () {
-        return view('student.notifications');
-    })->name('notifications');
+    Route::get('/notifications', [StudentNotificationController::class, 'index'])->name('notifications');
+    Route::post('/notifications/mark-all-read', [StudentNotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
 
     Route::get('/profile', function () {
         return view('student.profile');
     })->name('profile');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 });
 
 Route::prefix('dean')->name('dean.')->middleware(['auth', 'role:dean'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dean.dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DeanDashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/live-map', function () {
-        return view('dean.live-map');
-    })->name('live-map');
+    Route::get('/live-map', [LiveMapController::class, 'index'])->name('live-map');
 
     Route::get('/students', [StudentAccountController::class, 'index'])->name('students');
     Route::get('/students/create', [StudentAccountController::class, 'create'])->name('students.create');
     Route::post('/students', [StudentAccountController::class, 'store'])->name('students.store');
+    Route::get('/students/{student}', [StudentProfileController::class, 'show'])->name('students.show');
 
-    Route::get('/attendance', function () {
-        return view('dean.attendance');
-    })->name('attendance');
+    Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance');
 
-    Route::get('/reports', function () {
-        return view('dean.reports');
-    })->name('reports');
+    Route::get('/reports', [DeanAccomplishmentReportController::class, 'index'])->name('reports');
 
-    Route::get('/reports-export', function () {
-        return view('dean.reports-export');
-    })->name('reports-export');
+    Route::get('/reports-export', [ReportExportController::class, 'index'])->name('reports-export');
+    Route::get('/reports-export/download', [ReportExportController::class, 'download'])->name('reports-export.download');
 
-    Route::get('/notifications', function () {
-        return view('dean.notifications');
-    })->name('notifications');
+    Route::get('/notifications', [DeanNotificationController::class, 'index'])->name('notifications');
+    Route::post('/notifications/mark-all-read', [DeanNotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
 
     Route::get('/profile', function () {
         return view('dean.profile');
     })->name('profile');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 });

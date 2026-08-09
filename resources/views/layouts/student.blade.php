@@ -12,8 +12,24 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="h-screen overflow-hidden font-sans antialiased bg-white text-black">
-    <div class="flex h-full">
-        <aside class="w-[260px] shrink-0 bg-navy text-light-gray flex flex-col">
+    <div class="flex h-full" x-data="{ sidebarOpen: false }" @keydown.escape.window="sidebarOpen = false">
+        <div
+            x-show="sidebarOpen"
+            x-cloak
+            x-transition:enter="transition-opacity ease-linear duration-200"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition-opacity ease-linear duration-150"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 z-30 bg-black/40 lg:hidden"
+            @click="sidebarOpen = false"
+        ></div>
+
+        <aside
+            class="fixed inset-y-0 left-0 z-40 w-[260px] shrink-0 bg-navy text-light-gray flex flex-col transform transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0"
+            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+        >
             <div class="px-6 py-6 flex flex-col items-center text-center border-b border-white/10">
                 <div class="mb-3 h-20 w-20 overflow-hidden rounded-full">
                     <img src="{{ asset('images/normi-ojt-logo.jfif') }}" alt="NORMI logo" class="h-full w-full object-cover">
@@ -39,6 +55,7 @@
                 @foreach ($navItems as $routeName => $item)
                     <a
                         href="{{ route($routeName) }}"
+                        @click="sidebarOpen = false"
                         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition {{ request()->routeIs($routeName) ? 'bg-gold text-navy font-semibold' : 'text-light-gray hover:bg-white/5 hover:text-white' }}"
                     >
                         <x-dynamic-component :component="'heroicon-o-'.$item['icon']" class="h-5 w-5 shrink-0" />
@@ -72,14 +89,24 @@
         </aside>
 
         <div class="flex-1 flex flex-col min-w-0">
-            <header class="bg-white px-8 py-4 flex items-center justify-between">
-                <h1 class="text-lg font-semibold text-navy">@yield('title', 'Dashboard')</h1>
-                <div class="text-sm text-black/60">
+            <header class="bg-white px-4 py-3 sm:px-6 lg:px-8 lg:py-4 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                    <button
+                        type="button"
+                        @click="sidebarOpen = true"
+                        aria-label="Open menu"
+                        class="lg:hidden shrink-0 flex h-11 w-11 items-center justify-center rounded-md text-black/60 hover:bg-light-gray/40"
+                    >
+                        <x-heroicon-o-bars-3 class="h-6 w-6" />
+                    </button>
+                    <h1 class="text-lg font-semibold text-navy truncate">@yield('title', 'Dashboard')</h1>
+                </div>
+                <div class="hidden sm:block shrink-0 text-sm text-black/60">
                     {{ auth()->user()->name }}
                 </div>
             </header>
 
-            <main class="flex-1 px-8 py-6 overflow-y-auto">
+            <main class="flex-1 px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6 overflow-y-auto">
                 @if (session('status'))
                     <div class="mb-6 rounded-lg bg-success/5 px-4 py-3 text-sm text-success">
                         {{ session('status') }}

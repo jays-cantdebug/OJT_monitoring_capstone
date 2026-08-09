@@ -18,8 +18,8 @@
                                 {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                             </div>
                         @endif
-                        <label for="avatar" class="absolute bottom-0 right-0 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-navy text-white ring-2 ring-white hover:bg-navy/90">
-                            <x-heroicon-o-camera class="h-3.5 w-3.5" />
+                        <label for="avatar" class="absolute bottom-0 right-0 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-navy text-white ring-2 ring-white hover:bg-navy/90">
+                            <x-heroicon-o-camera class="h-4 w-4" />
                             <input type="file" id="avatar" name="avatar" accept="image/*" class="hidden" onchange="this.form.submit()">
                         </label>
                     </div>

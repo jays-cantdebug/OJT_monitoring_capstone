@@ -71,8 +71,8 @@
                 </div>
             </div>
             <div class="absolute bottom-4 right-4 flex flex-col rounded-md bg-white shadow-sm ring-1 ring-light-gray overflow-hidden">
-                <button type="button" class="flex h-8 w-8 items-center justify-center text-black/60 hover:bg-light-gray/40 border-b border-light-gray">+</button>
-                <button type="button" class="flex h-8 w-8 items-center justify-center text-black/60 hover:bg-light-gray/40">−</button>
+                <button type="button" class="flex h-11 w-11 items-center justify-center text-black/60 hover:bg-light-gray/40 border-b border-light-gray">+</button>
+                <button type="button" class="flex h-11 w-11 items-center justify-center text-black/60 hover:bg-light-gray/40">−</button>
             </div>
         </div>
     </div>

@@ -90,7 +90,30 @@
     </form>
 
     <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray overflow-hidden">
-        <table class="w-full text-sm">
+        <div class="sm:hidden divide-y divide-light-gray">
+            @forelse ($entries as $entry)
+                <div class="p-4">
+                    <div class="flex items-center justify-between gap-2">
+                        <p class="truncate text-sm font-medium text-black">{{ $entry->user->name }}</p>
+                        <p class="shrink-0 text-sm text-black/60">
+                            @if ($entry->time_out)
+                                @php $minutes = intdiv($entry->durationInSeconds(), 60); @endphp
+                                {{ intdiv($minutes, 60) }}h {{ $minutes % 60 }}m
+                            @else
+                                &mdash;
+                            @endif
+                        </p>
+                    </div>
+                    <p class="mt-1 text-xs text-black/40">
+                        {{ $entry->time_in->format('M j, Y') }} · {{ $entry->time_in->format('g:i A') }} – {{ $entry->time_out ? $entry->time_out->format('g:i A') : 'Still on duty' }}
+                    </p>
+                </div>
+            @empty
+                <div class="p-10 text-center text-sm text-black/60">No attendance records match these filters.</div>
+            @endforelse
+        </div>
+
+        <table class="hidden w-full text-sm sm:table">
             <thead>
                 <tr class="text-left text-black/40 border-b border-light-gray bg-light-gray/40">
                     <th class="px-5 py-2.5 text-xs font-bold uppercase tracking-wide">Student</th>

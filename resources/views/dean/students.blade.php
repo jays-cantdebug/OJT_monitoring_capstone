@@ -56,7 +56,30 @@
                 <p class="mt-1 text-sm text-black/60">Create the first account to get started.</p>
             </div>
         @else
-            <table class="w-full text-sm">
+            <div class="sm:hidden divide-y divide-light-gray">
+                @foreach ($students as $student)
+                    <div class="p-4">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
+                                {{ strtoupper(substr($student['name'], 0, 1)) }}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="truncate text-sm font-medium text-black">{{ $student['name'] }}</p>
+                                <p class="truncate text-xs text-black/40">{{ $student['company'] ?: 'Not yet provided' }}</p>
+                            </div>
+                            <span class="shrink-0 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold {{ $student['onDuty'] ? 'bg-success/10 text-success' : 'bg-light-gray text-black/60' }}">
+                                <span class="h-1.5 w-1.5 rounded-full {{ $student['onDuty'] ? 'bg-success' : 'bg-light-gray' }}"></span>
+                                {{ $student['onDuty'] ? 'On Duty' : 'Off Duty' }}
+                            </span>
+                        </div>
+                        <a href="{{ route('dean.students.show', $student['id']) }}" class="mt-3 block rounded-md bg-light-gray/40 py-2 text-center text-xs font-medium text-navy hover:bg-light-gray/60">
+                            View Details
+                        </a>
+                    </div>
+                @endforeach
+            </div>
+
+            <table class="hidden w-full text-sm sm:table">
                 <thead>
                     <tr class="text-left text-black/40 border-b border-light-gray bg-light-gray/40">
                         <th class="px-6 py-3 text-xs font-bold uppercase tracking-wide">Name</th>

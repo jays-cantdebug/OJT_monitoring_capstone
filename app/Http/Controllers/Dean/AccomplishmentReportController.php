@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Dean;
 
 use App\Http\Controllers\Controller;
 use App\Models\AccomplishmentReport;
-use Illuminate\Support\Facades\Storage;
 
 class AccomplishmentReportController extends Controller
 {
@@ -19,7 +18,7 @@ class AccomplishmentReportController extends Controller
                 'date' => $report->report_date->format('M j, Y'),
                 'dateIso' => $report->report_date->toDateString(),
                 'summary' => $report->description,
-                'photoUrl' => Storage::disk('public')->url($report->photo_path),
+                'photoUrl' => $report->photoUrl(),
             ]);
 
         return view('dean.reports', [

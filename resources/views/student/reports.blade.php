@@ -97,9 +97,9 @@
                                 <p class="text-sm font-medium text-black">{{ $report->report_date->format('M j, Y') }}</p>
                                 <p class="mt-1 text-sm text-black/60">{{ $report->description }}</p>
                             </div>
-                            <a href="{{ Storage::disk('public')->url($report->photo_path) }}" target="_blank" rel="noopener">
+                            <a href="{{ $report->photoUrl() }}" target="_blank" rel="noopener">
                                 <img
-                                    src="{{ Storage::disk('public')->url($report->photo_path) }}"
+                                    src="{{ $report->photoUrl() }}"
                                     alt="Photo evidence for {{ $report->report_date->format('M j, Y') }}"
                                     class="h-14 w-14 shrink-0 rounded-lg object-cover"
                                 >

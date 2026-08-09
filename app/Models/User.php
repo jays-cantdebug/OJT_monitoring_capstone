@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -64,7 +63,12 @@ class User extends Authenticatable
 
     public function avatarUrl(): ?string
     {
-        return $this->avatar_path ? Storage::disk('public')->url($this->avatar_path) : null;
+        // asset() resolves against the current request's actual host/port
+        // rather than the hardcoded APP_URL that Storage::url() bakes in -
+        // this matters because local dev here runs on a port APP_URL
+        // doesn't reflect, and Storage::url() would silently point at the
+        // wrong origin.
+        return $this->avatar_path ? asset('storage/'.$this->avatar_path) : null;
     }
 
     public function dtrEntries(): HasMany

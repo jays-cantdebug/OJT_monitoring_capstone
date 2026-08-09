@@ -85,4 +85,27 @@ class ProfileAvatarTest extends TestCase
         $response->assertSessionHasErrors('avatar');
         $this->assertNull($student->refresh()->avatar_path);
     }
+
+    public function test_avatar_url_matches_the_actual_request_origin_not_app_url(): void
+    {
+        // Regression test: avatarUrl() used to hardcode config('app.url') via
+        // Storage::disk('public')->url(), which broke on this machine because
+        // local dev runs on a port APP_URL doesn't reflect (php -S on a
+        // non-standard port). asset() must resolve against whatever host is
+        // actually serving the request instead.
+        Storage::fake('public');
+        config(['app.url' => 'http://this-does-not-match.invalid']);
+
+        $student = User::factory()->create();
+        $this->actingAs($student)->put('/student/profile', [
+            'avatar' => UploadedFile::fake()->image('me.jpg'),
+        ]);
+        $student->refresh();
+
+        $response = $this->actingAs($student)->get('http://127.0.0.1:9001/student/profile');
+
+        $response->assertOk();
+        $response->assertSee('http://127.0.0.1:9001/storage/'.$student->avatar_path, false);
+        $response->assertDontSee('this-does-not-match.invalid');
+    }
 }

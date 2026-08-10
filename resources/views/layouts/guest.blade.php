@@ -12,7 +12,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased bg-white text-black">
-    <div class="min-h-screen flex flex-col items-center justify-center px-4 py-12">
+    <div class="min-h-screen flex flex-col items-center justify-center px-4 py-6">
         @hasSection('header')
             @yield('header')
         @else
@@ -22,7 +22,7 @@
             </div>
         @endif
 
-        <div class="w-full max-w-md bg-white rounded-md shadow-sm ring-1 ring-light-gray p-8">
+        <div class="w-full max-w-md bg-white rounded-md shadow-sm ring-1 ring-light-gray p-6">
             @yield('content')
         </div>
     </div>

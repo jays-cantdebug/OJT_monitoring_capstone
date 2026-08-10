@@ -40,6 +40,8 @@ class GpsPingBroadcast implements ShouldBroadcastNow
         return [
             'user_id' => $this->ping->user_id,
             'name' => $this->ping->user->name,
+            'avatarUrl' => $this->ping->user->avatarUrl(),
+            'since' => $this->ping->dtrEntry->time_in->format('g:i A'),
             'latitude' => $this->ping->latitude,
             'longitude' => $this->ping->longitude,
             'recorded_at' => $this->ping->recorded_at->toIso8601String(),

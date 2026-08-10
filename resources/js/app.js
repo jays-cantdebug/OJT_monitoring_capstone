@@ -6,6 +6,19 @@ window.Alpine = Alpine;
 
 const PING_INTERVAL_MS = 60000;
 
+function geolocationErrorMessage(error) {
+    switch (error.code) {
+        case error.PERMISSION_DENIED:
+            return 'Location access was denied. You must allow location access to time in or out.';
+        case error.TIMEOUT:
+            return 'Getting your location timed out. Check your GPS/network signal and try again.';
+        case error.POSITION_UNAVAILABLE:
+            return 'Your location could not be determined. Check your GPS/network signal and try again.';
+        default:
+            return 'Could not get your location. Please try again.';
+    }
+}
+
 Alpine.data('timeClock', (onDuty) => ({
     requesting: false,
     error: null,
@@ -36,9 +49,9 @@ Alpine.data('timeClock', (onDuty) => ({
                 this.requesting = false;
                 this.$nextTick(() => this.$refs[formRef].submit());
             },
-            () => {
+            (error) => {
                 this.requesting = false;
-                this.error = 'Location access was denied. You must allow location access to time in or out.';
+                this.error = geolocationErrorMessage(error);
             },
             { enableHighAccuracy: true, timeout: 10000 }
         );
@@ -68,24 +81,138 @@ Alpine.data('timeClock', (onDuty) => ({
     },
 }));
 
-Alpine.data('liveMap', (initialOnDuty) => ({
-    students: initialOnDuty,
+// Fallback map center (NORMI campus, Cagayan de Oro) used only until the
+// first student location is known - real pings recenter/fit the map.
+const DEFAULT_MAP_CENTER = [8.4822, 124.6472];
 
-    async init() {
-        const { initEcho } = await import('./echo');
+Alpine.data('liveMap', (initialOnDuty) => {
+    // Leaflet's map/marker instances are kept out of Alpine's reactive
+    // proxy (plain closure variables, not `this` properties) - wrapping
+    // them in Alpine's reactivity is a known source of breakage.
+    let map = null;
+    const markers = {};
 
-        initEcho()
-            .private('dean.live-map')
-            .listen('.ping.created', (event) => {
-                const existing = this.students.find((student) => student.userId === event.user_id);
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;',
+        }[char]));
+    }
 
-                if (existing) {
-                    existing.latitude = event.latitude;
-                    existing.longitude = event.longitude;
-                    existing.lastPingAt = 'just now';
-                }
-            });
-    },
-}));
+    function initials(name) {
+        return escapeHtml((name ?? '').trim().charAt(0).toUpperCase());
+    }
+
+    function avatarHtml(student) {
+        return student.avatarUrl
+            ? `<img src="${escapeHtml(student.avatarUrl)}" alt="" class="block h-9 w-9 rounded-full border-2 border-white object-cover shadow-md">`
+            : `<span class="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-gold/10 text-sm font-bold text-gold shadow-md">${initials(student.name)}</span>`;
+    }
+
+    // Every student on this map is already on-duty by definition (the
+    // controller only ever queries on-duty students) - the dot is a visual
+    // echo of that fact, matching the "on duty" dot used elsewhere in the
+    // app, not new information.
+    function markerIcon(L, student) {
+        return L.divIcon({
+            className: '',
+            html: `<span class="relative block h-9 w-9">
+                ${avatarHtml(student)}
+                <span class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-success ring-2 ring-white"></span>
+            </span>`,
+            iconSize: [36, 36],
+            iconAnchor: [18, 18],
+        });
+    }
+
+    function profileUrl(student) {
+        return `/dean/students/${student.userId}`;
+    }
+
+    function popupHtml(student) {
+        return `<p class="font-semibold text-navy">${escapeHtml(student.name)}</p>
+            <a href="${profileUrl(student)}" class="text-xs font-medium text-navy hover:underline">View Profile &rarr;</a>`;
+    }
+
+    function upsertMarker(L, student) {
+        if (student.latitude == null || student.longitude == null) {
+            return;
+        }
+
+        const latLng = [student.latitude, student.longitude];
+
+        if (markers[student.userId]) {
+            markers[student.userId].setLatLng(latLng);
+        } else {
+            markers[student.userId] = L.marker(latLng, { icon: markerIcon(L, student) })
+                .bindPopup(popupHtml(student))
+                .addTo(map);
+        }
+    }
+
+    return {
+        students: initialOnDuty,
+
+        profileUrl,
+
+        async init() {
+            const L = await import('leaflet');
+            const { initEcho } = await import('./echo');
+
+            const withLocation = this.students.filter(
+                (student) => student.latitude != null && student.longitude != null
+            );
+
+            map = L.map(this.$refs.map).setView(
+                withLocation.length ? [withLocation[0].latitude, withLocation[0].longitude] : DEFAULT_MAP_CENTER,
+                15
+            );
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            }).addTo(map);
+
+            this.students.forEach((student) => upsertMarker(L, student));
+
+            if (withLocation.length > 1) {
+                map.fitBounds(withLocation.map((student) => [student.latitude, student.longitude]), {
+                    padding: [32, 32],
+                });
+            }
+
+            initEcho()
+                .private('dean.live-map')
+                .listen('.ping.created', (event) => {
+                    const existing = this.students.find((student) => student.userId === event.user_id);
+
+                    if (existing) {
+                        existing.latitude = event.latitude;
+                        existing.longitude = event.longitude;
+                        existing.lastPingAt = 'just now';
+                        upsertMarker(L, existing);
+                    } else {
+                        // A student who came on duty after this page loaded -
+                        // not part of the initial payload, so add them now
+                        // instead of silently dropping their first ping.
+                        const student = {
+                            userId: event.user_id,
+                            name: event.name,
+                            avatarUrl: event.avatarUrl,
+                            since: event.since,
+                            latitude: event.latitude,
+                            longitude: event.longitude,
+                            lastPingAt: 'just now',
+                        };
+                        this.students.push(student);
+                        upsertMarker(L, student);
+                    }
+                });
+        },
+    };
+});
 
 Alpine.start();

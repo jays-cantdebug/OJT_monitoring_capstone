@@ -3,22 +3,17 @@
 @section('title', 'Log In')
 
 @section('header')
-    <div class="mb-8 text-center">
-        <div class="mx-auto mb-4 h-24 w-24 overflow-hidden rounded-full">
+    <div class="mb-5 text-center">
+        <div class="mx-auto mb-3 h-16 w-16 overflow-hidden rounded-full">
             <img src="{{ asset('images/normi-ojt-logo.jfif') }}" alt="NORMI logo" class="h-full w-full object-cover">
         </div>
 
         <p class="text-xs font-bold uppercase tracking-wide text-black/60">Northern Mindanao Colleges, Inc.</p>
-        <h1 class="mt-2 text-2xl font-bold text-navy leading-snug">
+        <h1 class="mt-2 text-xl font-bold text-navy leading-snug">
             Web-based On-the-Job Monitoring and Reporting System with GPS
         </h1>
 
-        <div class="mt-4 inline-flex items-center gap-1.5 rounded-full bg-light-gray px-3 py-1 text-xs font-semibold uppercase tracking-wide text-black/60">
-            <x-heroicon-o-shield-check class="h-3.5 w-3.5" />
-            Secure Login
-        </div>
-
-        <hr class="mt-6 border-light-gray">
+        <hr class="mt-4 border-light-gray">
     </div>
 @endsection
 
@@ -26,7 +21,7 @@
     <form
         method="POST"
         action="{{ route('login') }}"
-        class="space-y-5"
+        class="space-y-3"
         x-data="{ submitting: false }"
         @submit="submitting = true"
     >
@@ -55,10 +50,7 @@
         </div>
 
         <div x-data="{ show: false }">
-            <div class="flex items-center justify-between">
-                <label for="password" class="block text-xs font-bold uppercase tracking-wide text-black/60">Password</label>
-                <a href="#" class="text-xs font-medium text-navy hover:underline">Forgot Password?</a>
-            </div>
+            <label for="password" class="block text-xs font-bold uppercase tracking-wide text-black/60">Password</label>
             <div class="relative mt-1.5">
                 <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-black/40">
                     <x-heroicon-o-lock-closed class="h-5 w-5" />
@@ -86,14 +78,17 @@
             @enderror
         </div>
 
-        <div class="flex items-center">
-            <input
-                type="checkbox"
-                id="remember"
-                name="remember"
-                class="rounded border-light-gray text-navy shadow-sm focus:ring-navy/40"
-            >
-            <label for="remember" class="ml-2 text-sm text-black/60">Remember Me</label>
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <input
+                    type="checkbox"
+                    id="remember"
+                    name="remember"
+                    class="rounded border-light-gray text-navy shadow-sm focus:ring-navy/40"
+                >
+                <label for="remember" class="ml-2 text-sm text-black/60">Remember Me</label>
+            </div>
+            <a href="#" class="text-xs font-medium text-navy hover:underline">Forgot Password?</a>
         </div>
 
         <div>
@@ -123,7 +118,7 @@
         <button
             type="submit"
             :disabled="submitting"
-            class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-gold px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-gold/90 focus:outline-none focus:ring-2 focus:ring-navy focus:ring-offset-2 disabled:opacity-75"
+            class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-gold px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-gold/90 focus:outline-none focus:ring-2 focus:ring-navy focus:ring-offset-2 disabled:opacity-75"
         >
             <svg x-show="submitting" x-cloak class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

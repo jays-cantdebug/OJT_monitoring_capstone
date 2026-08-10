@@ -49,7 +49,7 @@
         <ul class="divide-y divide-light-gray mb-6">
             <template x-for="student in students" :key="student.userId">
                 <li class="py-3 flex items-center justify-between text-sm">
-                    <span class="text-black" x-text="student.name"></span>
+                    <a :href="profileUrl(student)" class="text-black hover:text-navy hover:underline" x-text="student.name"></a>
                     <span class="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-xs font-semibold text-success">
                         <span class="h-1.5 w-1.5 rounded-full bg-success"></span>
                         <span x-text="'Since ' + student.since"></span>
@@ -62,18 +62,6 @@
             </li>
         </ul>
 
-        <div class="relative h-96 rounded-lg bg-light-gray overflow-hidden">
-            <div class="absolute inset-0" style="background-image: linear-gradient(rgba(0,0,0,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.08) 1px, transparent 1px); background-size: 32px 32px;"></div>
-            <div class="absolute inset-0 flex items-center justify-center text-center px-6">
-                <div>
-                    <p class="text-sm font-medium text-black/60">Map will render here</p>
-                    <p class="mt-1 text-xs text-black/40">Real-time ping data above is live (Reverb) &mdash; waiting only on Google Maps API key provisioning to render actual markers</p>
-                </div>
-            </div>
-            <div class="absolute bottom-4 right-4 flex flex-col rounded-md bg-white shadow-sm ring-1 ring-light-gray overflow-hidden">
-                <button type="button" class="flex h-11 w-11 items-center justify-center text-black/60 hover:bg-light-gray/40 border-b border-light-gray">+</button>
-                <button type="button" class="flex h-11 w-11 items-center justify-center text-black/60 hover:bg-light-gray/40">−</button>
-            </div>
-        </div>
+        <div class="relative h-96 rounded-lg bg-light-gray overflow-hidden" x-ref="map"></div>
     </div>
 @endsection

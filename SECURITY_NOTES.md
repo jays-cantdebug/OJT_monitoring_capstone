@@ -46,3 +46,17 @@ This project installs `laravel/framework v11.55.0` — inside the affected `>=11
 There is no Dean self-registration flow and none is planned. The first (and for now, only) Dean account is created directly via `database/seeders/DeanSeeder.php` (`dean@normi.edu.ph`, dev-only placeholder password). **Per the 2026-08-09 correction above, Student Intern accounts now follow the same admin-provisioned pattern** — created by the Dean directly, not via self-registration — so this seeded/provisioned approach turns out to be the norm for both roles, not an exception unique to Dean.
 
 **Action item:** the seeded password is a local-dev placeholder and must be changed before any real deployment or live demo.
+
+## Live Map — Leaflet.js + OpenStreetMap Instead of Google Maps
+
+**Status:** Intentional deviation from the paper, [USER]-confirmed — not an oversight.
+
+**What the paper says:** [PAPER, Ch3 3.5] specifies the Dean's Live Map feature is to be built on the Google Maps API.
+
+**What was actually built:** Leaflet.js rendering OpenStreetMap tiles, wired to the existing real-time GPS ping pipeline (`GpsPingBroadcast` over the `dean.live-map` Reverb channel, consumed by the `liveMap` Alpine component in `resources/js/app.js`).
+
+**Why:** Google Maps API requires a billing-enabled Google Cloud project (a credit card on file) even to stay within the free tier, plus an API key that has to be provisioned, restricted, and kept out of source control. Leaflet + OpenStreetMap needs neither — no API key, no credit card, no billing account — while providing the same core capability this feature needs (tile map + markers). For a thesis project with no institutional billing account behind it, this removes a hard external dependency for zero functional loss on the requirements actually being demonstrated.
+
+**Scope of the deviation:** front-end mapping library only. The GPS ping capture, storage (`gps_pings` table), and real-time broadcast layer are unaffected and were already built/verified independently of which map renderer displays them — see `app/Events/GpsPingBroadcast.php` and `app/Http/Controllers/Dean/LiveMapController.php`.
+
+**Trade-off accepted:** OpenStreetMap's public tile servers are a free shared resource with fair-use rate limits (not meant for high-traffic production use without a paid tile provider or self-hosting). Acceptable for this project's scale (thesis demo, single institution, small concurrent user count). Revisit if this ever needs to scale beyond that.

@@ -4,16 +4,12 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\DtrEntry;
+use App\Support\CoordinateRules;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class DtrController extends Controller
 {
-    private const COORDINATE_RULES = [
-        'latitude' => ['required', 'numeric', 'between:-90,90'],
-        'longitude' => ['required', 'numeric', 'between:-180,180'],
-    ];
-
     public function show(Request $request)
     {
         $openEntry = $request->user()->openDtrEntry();
@@ -44,7 +40,7 @@ class DtrController extends Controller
 
         abort_if($user->openDtrEntry(), 422, 'You are already on duty.');
 
-        $coordinates = $request->validate(self::COORDINATE_RULES);
+        $coordinates = $request->validate(CoordinateRules::rules());
 
         DtrEntry::create([
             'user_id' => $user->id,
@@ -64,7 +60,7 @@ class DtrController extends Controller
 
         abort_unless($entry, 422, 'You are not currently on duty.');
 
-        $coordinates = $request->validate(self::COORDINATE_RULES);
+        $coordinates = $request->validate(CoordinateRules::rules());
 
         $entry->update([
             'time_out' => now(),

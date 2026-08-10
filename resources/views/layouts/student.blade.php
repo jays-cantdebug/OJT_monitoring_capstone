@@ -82,7 +82,7 @@
                     @csrf
                     <button type="submit" class="mt-1 w-full flex items-center gap-2 text-left rounded-lg px-3 py-2 text-sm font-medium text-light-gray hover:bg-white/5 hover:text-white">
                         <x-heroicon-o-arrow-right-on-rectangle class="h-4 w-4" />
-                        Sign Out Session
+                        Sign Out
                     </button>
                 </form>
             </div>

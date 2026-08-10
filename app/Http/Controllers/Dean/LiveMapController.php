@@ -19,6 +19,7 @@ class LiveMapController extends Controller
                 return [
                     'userId' => $student->id,
                     'name' => $student->name,
+                    'avatarUrl' => $student->avatarUrl(),
                     'since' => $entry->time_in->format('g:i A'),
                     'latitude' => $latestPing?->latitude,
                     'longitude' => $latestPing?->longitude,

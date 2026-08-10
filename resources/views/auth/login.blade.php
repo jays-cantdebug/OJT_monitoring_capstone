@@ -91,30 +91,6 @@
             <a href="#" class="text-xs font-medium text-navy hover:underline">Forgot Password?</a>
         </div>
 
-        <div>
-            <label for="role" class="block text-xs font-bold uppercase tracking-wide text-black/60">Role</label>
-            <div class="relative mt-1.5">
-                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-black/40">
-                    <x-heroicon-o-user-circle class="h-5 w-5" />
-                </span>
-                <select
-                    id="role"
-                    name="role"
-                    class="block w-full appearance-none rounded-md border-0 bg-light-gray py-2.5 pl-10 pr-10 text-sm text-black focus:ring-2 focus:ring-navy/40"
-                >
-                    <option>Dean</option>
-                    <option>Coordinator</option>
-                    <option>Intern</option>
-                </select>
-                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-black/40">
-                    <x-heroicon-o-chevron-down class="h-4 w-4" />
-                </span>
-            </div>
-            <p class="mt-1.5 text-xs italic text-black/40">
-                Temporary role selection for frontend demonstration only. Automatic role detection will be implemented after backend integration.
-            </p>
-        </div>
-
         <button
             type="submit"
             :disabled="submitting"

@@ -13,14 +13,6 @@
                 <p class="text-xs text-black/60">These stats are filtered automatically to show only the students assigned to your supervision.</p>
             </div>
         </div>
-        <div class="flex items-center gap-2">
-            <button type="button" class="rounded-md bg-gold px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-gold/90">
-                Pause Auto Sync
-            </button>
-            <button type="button" class="rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-black ring-1 ring-light-gray hover:bg-light-gray/40">
-                Reset Stats
-            </button>
-        </div>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
@@ -33,7 +25,7 @@
             </div>
             <p class="mt-3 text-xs font-bold uppercase tracking-wide text-black/40">Assigned Interns</p>
             <p class="mt-1 text-2xl font-bold text-navy">{{ $assignedCount }}</p>
-            <p class="mt-1 text-xs text-black/60">Assigned by Coordinator</p>
+            <p class="mt-1 text-xs text-black/60">Provisioned by you</p>
         </div>
 
         <div class="relative rounded-xl bg-white p-4 shadow-sm ring-1 ring-light-gray">

@@ -66,6 +66,165 @@
         </div>
     </div>
 
+    <div class="mb-4 rounded-xl bg-white shadow-sm ring-1 ring-light-gray overflow-hidden">
+        <div class="p-4 border-b border-light-gray">
+            <div class="flex items-center gap-2">
+                <span class="h-2.5 w-2.5 rounded-full bg-success"></span>
+                <h2 class="text-sm font-bold text-navy">Present Today &mdash; {{ $presentStudents->count() }} {{ $presentStudents->count() === 1 ? 'Intern' : 'Interns' }}</h2>
+            </div>
+            <p class="mt-1 text-xs text-black/50">
+                Assigned students with a Time In logged today, most recent first.
+            </p>
+        </div>
+
+        @if ($presentStudents->isEmpty())
+            <div class="p-10 text-center">
+                <x-heroicon-o-user-group class="mx-auto h-10 w-10 text-light-gray" />
+                <p class="mt-3 text-sm font-bold text-navy">No One Has Timed In Yet</p>
+                <p class="mt-1 text-sm text-black/60">Present students will show up here as they clock in.</p>
+            </div>
+        @else
+            <div class="sm:hidden divide-y divide-light-gray">
+                @foreach ($presentStudents as $student)
+                    @php $todayEntry = $student->dtrEntries->first(); @endphp
+                    <div class="p-4">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-success/10 text-sm font-bold text-success">
+                                {{ strtoupper(substr($student->name, 0, 1)) }}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="truncate text-sm font-medium text-black">{{ $student->name }}</p>
+                                <p class="truncate text-xs text-black/40">{{ $student->studentProfile?->company_name ?: 'Not yet provided' }}</p>
+                            </div>
+                            <span class="shrink-0 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold {{ $todayEntry && ! $todayEntry->time_out ? 'bg-success/10 text-success' : 'bg-light-gray text-black/60' }}">
+                                <span class="h-1.5 w-1.5 rounded-full {{ $todayEntry && ! $todayEntry->time_out ? 'bg-success' : 'bg-light-gray' }}"></span>
+                                {{ $todayEntry && ! $todayEntry->time_out ? 'On Duty' : 'Timed Out' }}
+                            </span>
+                        </div>
+                        <p class="mt-2 text-xs text-black/40">
+                            Timed in at {{ $todayEntry?->time_in->format('g:i A') }}
+                        </p>
+                        <a href="{{ route('dean.students.show', $student->id) }}" class="mt-3 block rounded-md bg-light-gray/40 py-2 text-center text-xs font-medium text-navy hover:bg-light-gray/60">
+                            View Profile
+                        </a>
+                    </div>
+                @endforeach
+            </div>
+
+            <table class="hidden w-full text-sm sm:table">
+                <thead>
+                    <tr class="text-left text-black/40 border-b border-light-gray bg-light-gray/40">
+                        <th class="px-6 py-3 text-xs font-bold uppercase tracking-wide">Student</th>
+                        <th class="px-6 py-3 text-xs font-bold uppercase tracking-wide">Company</th>
+                        <th class="px-6 py-3 text-xs font-bold uppercase tracking-wide">Time In</th>
+                        <th class="px-6 py-3 text-xs font-bold uppercase tracking-wide">Status</th>
+                        <th class="px-6 py-3 text-xs font-bold uppercase tracking-wide text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-light-gray">
+                    @foreach ($presentStudents as $student)
+                        @php $todayEntry = $student->dtrEntries->first(); @endphp
+                        <tr class="hover:bg-light-gray/40 transition">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-success/10 text-sm font-bold text-success">
+                                        {{ strtoupper(substr($student->name, 0, 1)) }}
+                                    </div>
+                                    <span class="text-black font-medium">{{ $student->name }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-black/40">{{ $student->studentProfile?->company_name ?: 'Not yet provided' }}</td>
+                            <td class="px-6 py-4 text-black/60">{{ $todayEntry?->time_in->format('g:i A') }}</td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold {{ $todayEntry && ! $todayEntry->time_out ? 'bg-success/10 text-success' : 'bg-light-gray text-black/60' }}">
+                                    <span class="h-1.5 w-1.5 rounded-full {{ $todayEntry && ! $todayEntry->time_out ? 'bg-success' : 'bg-light-gray' }}"></span>
+                                    {{ $todayEntry && ! $todayEntry->time_out ? 'On Duty' : 'Timed Out' }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <a href="{{ route('dean.students.show', $student->id) }}" class="text-xs font-medium text-navy hover:underline">View Profile</a>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+    </div>
+
+    <div class="mb-4 rounded-xl bg-white shadow-sm ring-1 ring-light-gray overflow-hidden">
+        <div class="p-4 border-b border-light-gray">
+            <div class="flex items-center gap-2">
+                <span class="h-2.5 w-2.5 rounded-full bg-danger"></span>
+                <h2 class="text-sm font-bold text-navy">Absent Today &mdash; {{ $absentStudents->count() }} {{ $absentStudents->count() === 1 ? 'Intern' : 'Interns' }}</h2>
+            </div>
+            <p class="mt-1 text-xs text-black/50">
+                Assigned students with no Time In logged today. Doesn't account for students who've already completed their OJT hours or are on approved leave.
+            </p>
+        </div>
+
+        @if ($absentStudents->isEmpty())
+            <div class="p-10 text-center">
+                <x-heroicon-o-check-circle class="mx-auto h-10 w-10 text-light-gray" />
+                <p class="mt-3 text-sm font-bold text-navy">No Absences Today</p>
+                <p class="mt-1 text-sm text-black/60">Every assigned student has timed in.</p>
+            </div>
+        @else
+            <div class="sm:hidden divide-y divide-light-gray">
+                @foreach ($absentStudents as $student)
+                    @php $lastEntry = $student->dtrEntries->first(); @endphp
+                    <div class="p-4">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-danger/10 text-sm font-bold text-danger">
+                                {{ strtoupper(substr($student->name, 0, 1)) }}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="truncate text-sm font-medium text-black">{{ $student->name }}</p>
+                                <p class="truncate text-xs text-black/40">{{ $student->studentProfile?->company_name ?: 'Not yet provided' }}</p>
+                            </div>
+                            <span class="shrink-0 text-xs text-black/50">
+                                {{ $lastEntry ? $lastEntry->time_in->diffForHumans() : 'Never logged in' }}
+                            </span>
+                        </div>
+                        <a href="{{ route('dean.students.show', $student->id) }}" class="mt-3 block rounded-md bg-light-gray/40 py-2 text-center text-xs font-medium text-navy hover:bg-light-gray/60">
+                            View Profile
+                        </a>
+                    </div>
+                @endforeach
+            </div>
+
+            <table class="hidden w-full text-sm sm:table">
+                <thead>
+                    <tr class="text-left text-black/40 border-b border-light-gray bg-light-gray/40">
+                        <th class="px-6 py-3 text-xs font-bold uppercase tracking-wide">Student</th>
+                        <th class="px-6 py-3 text-xs font-bold uppercase tracking-wide">Company</th>
+                        <th class="px-6 py-3 text-xs font-bold uppercase tracking-wide">Last Time In</th>
+                        <th class="px-6 py-3 text-xs font-bold uppercase tracking-wide text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-light-gray">
+                    @foreach ($absentStudents as $student)
+                        @php $lastEntry = $student->dtrEntries->first(); @endphp
+                        <tr class="hover:bg-light-gray/40 transition">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-danger/10 text-sm font-bold text-danger">
+                                        {{ strtoupper(substr($student->name, 0, 1)) }}
+                                    </div>
+                                    <span class="text-black font-medium">{{ $student->name }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-black/40">{{ $student->studentProfile?->company_name ?: 'Not yet provided' }}</td>
+                            <td class="px-6 py-4 text-black/60">{{ $lastEntry ? $lastEntry->time_in->diffForHumans() : 'Never logged in' }}</td>
+                            <td class="px-6 py-4 text-right">
+                                <a href="{{ route('dean.students.show', $student->id) }}" class="text-xs font-medium text-navy hover:underline">View Profile</a>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+    </div>
+
     <form method="GET" action="{{ route('dean.attendance') }}" class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-3 mb-4 flex flex-wrap items-center gap-3">
         <h2 class="shrink-0 text-sm font-bold text-navy">Attendance Registry</h2>
         <div class="relative flex-1 min-w-[200px]">

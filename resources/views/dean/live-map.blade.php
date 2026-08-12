@@ -18,50 +18,45 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-4 mb-6 flex flex-wrap items-center gap-3">
-        <div class="relative flex-1 min-w-[200px]">
-            <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-black/40">
-                <x-heroicon-o-magnifying-glass class="h-4 w-4" />
-            </span>
-            <input type="text" placeholder="Search student or ID..." class="w-full rounded-md border-0 bg-light-gray py-2.5 pl-9 pr-3 text-sm text-black focus:ring-2 focus:ring-navy/40">
-        </div>
-        <button type="button" class="inline-flex items-center gap-1.5 rounded-md bg-light-gray px-3.5 py-2.5 text-xs font-semibold text-black hover:bg-black/10">
-            <x-heroicon-o-funnel class="h-4 w-4" />
-            Filters
-        </button>
-        <button type="button" class="flex h-9 w-9 items-center justify-center rounded-md bg-light-gray text-black/60 hover:bg-black/10">
-            <x-heroicon-o-paper-airplane class="h-4 w-4" />
-        </button>
-        <button type="button" class="flex h-9 w-9 items-center justify-center rounded-md bg-light-gray text-black/60 hover:bg-black/10">
-            <x-heroicon-o-arrow-path class="h-4 w-4" />
-        </button>
-    </div>
-
-    <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-6" x-data="liveMap({{ $onDuty->values()->toJson() }})">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-xs font-bold uppercase tracking-wide text-navy">Intern List (<span x-text="students.length"></span>)</h3>
-            <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-success">
-                <span class="h-1.5 w-1.5 rounded-full bg-success"></span>
-                Live &mdash; Real-Time Ping Updates
-            </span>
+    <div x-data="liveMap({{ $onDuty->values()->toJson() }})">
+        <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-4 mb-6 flex flex-wrap items-center gap-3">
+            <div class="relative flex-1 min-w-[200px]">
+                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-black/40">
+                    <x-heroicon-o-magnifying-glass class="h-4 w-4" />
+                </span>
+                <input type="text" x-model="search" placeholder="Search student..." class="w-full rounded-md border-0 bg-light-gray py-2.5 pl-9 pr-3 text-sm text-black focus:ring-2 focus:ring-navy/40">
+            </div>
         </div>
 
-        <ul class="divide-y divide-light-gray mb-6">
-            <template x-for="student in students" :key="student.userId">
-                <li class="py-3 flex items-center justify-between text-sm">
-                    <a :href="profileUrl(student)" class="text-black hover:text-navy hover:underline" x-text="student.name"></a>
-                    <span class="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-xs font-semibold text-success">
-                        <span class="h-1.5 w-1.5 rounded-full bg-success"></span>
-                        <span x-text="'Since ' + student.since"></span>
-                        <span x-show="student.lastPingAt" x-text="'· last ping ' + student.lastPingAt"></span>
-                    </span>
+        <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xs font-bold uppercase tracking-wide text-navy">Intern List (<span x-text="filteredStudents.length"></span>)</h3>
+                <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-success">
+                    <span class="h-1.5 w-1.5 rounded-full bg-success"></span>
+                    Live &mdash; Real-Time Ping Updates
+                </span>
+            </div>
+
+            <ul class="divide-y divide-light-gray mb-6">
+                <template x-for="student in filteredStudents" :key="student.userId">
+                    <li class="py-3 flex items-center justify-between text-sm">
+                        <a :href="profileUrl(student)" class="text-black hover:text-navy hover:underline" x-text="student.name"></a>
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-xs font-semibold text-success">
+                            <span class="h-1.5 w-1.5 rounded-full bg-success"></span>
+                            <span x-text="'Since ' + student.since"></span>
+                            <span x-show="student.lastPingAt" x-text="'· last ping ' + student.lastPingAt"></span>
+                        </span>
+                    </li>
+                </template>
+                <li x-show="students.length === 0" class="py-6 text-center text-sm text-black/60">
+                    No interns are currently on duty.
                 </li>
-            </template>
-            <li x-show="students.length === 0" class="py-6 text-center text-sm text-black/60">
-                No interns are currently on duty.
-            </li>
-        </ul>
+                <li x-show="students.length > 0 && filteredStudents.length === 0" class="py-6 text-center text-sm text-black/60">
+                    No interns match "<span x-text="search"></span>".
+                </li>
+            </ul>
 
-        <div class="relative h-96 rounded-lg bg-light-gray overflow-hidden" x-ref="map"></div>
+            <div class="relative h-96 rounded-lg bg-light-gray overflow-hidden" x-ref="map"></div>
+        </div>
     </div>
 @endsection

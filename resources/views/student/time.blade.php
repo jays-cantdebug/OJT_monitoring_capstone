@@ -10,6 +10,20 @@
     @endif
 
     <div class="max-w-lg" x-data="timeClock({{ $openEntry ? 'true' : 'false' }})">
+        <div x-show="insecureContext" x-cloak class="mb-4 rounded-xl bg-danger/5 ring-1 ring-danger/20 p-5">
+            <div class="flex items-start gap-3">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-danger/10 text-danger">
+                    <x-heroicon-o-exclamation-triangle class="h-5 w-5" />
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-danger">Time In/Out isn't available on this connection.</p>
+                    <p class="mt-1 text-sm text-danger">
+                        This page needs to load over a secure connection (HTTPS) or from "localhost" for your phone or computer to share location. Please let your administrator know.
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-8 text-center">
             <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full {{ $openEntry ? 'bg-success/10 text-success' : 'bg-light-gray text-black/40' }}">
                 <x-heroicon-o-clock class="h-7 w-7" />
@@ -38,7 +52,7 @@
                     <button
                         type="button"
                         x-on:click="requestLocationAndSubmit('clockInForm')"
-                        x-bind:disabled="requesting"
+                        x-bind:disabled="requesting || insecureContext"
                         class="mt-6 w-full inline-flex justify-center items-center gap-2 rounded-md bg-gold px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gold/90 disabled:opacity-50"
                     >
                         <span x-show="!requesting">Time In</span>
@@ -53,7 +67,7 @@
                     <button
                         type="button"
                         x-on:click="requestLocationAndSubmit('clockOutForm')"
-                        x-bind:disabled="requesting"
+                        x-bind:disabled="requesting || insecureContext"
                         class="mt-6 w-full inline-flex justify-center items-center gap-2 rounded-md bg-gold px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gold/90 disabled:opacity-50"
                     >
                         <span x-show="!requesting">Time Out</span>

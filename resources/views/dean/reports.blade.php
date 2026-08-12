@@ -22,6 +22,7 @@
     <div x-data="{
         activeTab: 'All',
         search: '',
+        lightboxUrl: null,
         reports: {{ $reports->values()->toJson() }},
         isToday(report) {
             return report.dateIso === new Date().toISOString().slice(0, 10);
@@ -78,10 +79,10 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-3 shrink-0">
-                        <a :href="report.photoUrl" target="_blank" rel="noopener" class="h-14 w-14 shrink-0 rounded-lg bg-light-gray overflow-hidden block">
+                        <a :href="report.photoUrl" target="_blank" rel="noopener" @click.prevent="lightboxUrl = report.photoUrl" class="h-14 w-14 shrink-0 rounded-lg bg-light-gray overflow-hidden block">
                             <img :src="report.photoUrl" class="h-full w-full object-cover" alt="Photo evidence">
                         </a>
-                        <a :href="report.photoUrl" target="_blank" rel="noopener" class="text-xs font-medium text-navy hover:underline">View</a>
+                        <a :href="report.photoUrl" target="_blank" rel="noopener" @click.prevent="lightboxUrl = report.photoUrl" class="text-xs font-medium text-navy hover:underline">View</a>
                     </div>
                 </div>
             </template>
@@ -91,6 +92,44 @@
                 <p class="mt-3 text-sm font-bold text-navy">No matching journals found</p>
                 <p class="mt-1 text-sm text-black/60">Try adjusting your filters or wait for student uploads.</p>
             </div>
+        </div>
+
+        <div
+            x-show="lightboxUrl"
+            x-cloak
+            @keydown.escape.window="lightboxUrl = null"
+            class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
+            <div
+                x-show="lightboxUrl"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                class="absolute inset-0 bg-black/80"
+                @click="lightboxUrl = null"
+            ></div>
+
+            <button
+                type="button"
+                @click="lightboxUrl = null"
+                class="absolute top-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+                aria-label="Close"
+            >
+                <x-heroicon-o-x-mark class="h-6 w-6" />
+            </button>
+
+            <img
+                x-show="lightboxUrl"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 scale-95"
+                x-transition:enter-end="opacity-100 scale-100"
+                :src="lightboxUrl"
+                class="relative max-h-full max-w-full rounded-lg object-contain"
+                alt="Photo evidence"
+            >
         </div>
     </div>
 @endsection

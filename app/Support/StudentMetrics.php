@@ -40,6 +40,42 @@ class StudentMetrics
             ->count('user_id');
     }
 
+    /**
+     * Assigned students with a DTR entry today, sorted most-recent
+     * time-in first. Each student carries only their latest entry from
+     * today (a student can clock in/out more than once in a day).
+     */
+    public static function presentTodayStudents(): Collection
+    {
+        return User::where('role', 'student_intern')
+            ->whereHas('dtrEntries', fn ($query) => $query->whereDate('time_in', today()))
+            ->with(['studentProfile', 'dtrEntries' => fn ($query) => $query->whereDate('time_in', today())->latest('time_in')->limit(1)])
+            ->get()
+            ->sortByDesc(fn (User $student) => $student->dtrEntries->first()?->time_in)
+            ->values();
+    }
+
+    /**
+     * Assigned students with no DTR entry today, sorted so the students who
+     * have gone longest without timing in appear first (never-logged-in
+     * students first, then oldest last time-in). This is a rough proxy for
+     * "absent" — the system has no concept of a required schedule, so it
+     * can't distinguish an actual absence from a student who's already
+     * completed their hours or is on approved leave.
+     */
+    public static function absentTodayStudents(): Collection
+    {
+        return User::where('role', 'student_intern')
+            ->whereDoesntHave('dtrEntries', fn ($query) => $query->whereDate('time_in', today()))
+            ->with(['studentProfile', 'dtrEntries' => fn ($query) => $query->latest('time_in')->limit(1)])
+            ->get()
+            ->sortBy([
+                fn (User $a, User $b) => ($b->dtrEntries->first() === null) <=> ($a->dtrEntries->first() === null),
+                fn (User $a, User $b) => ($a->dtrEntries->first()?->time_in ?? today()) <=> ($b->dtrEntries->first()?->time_in ?? today()),
+            ])
+            ->values();
+    }
+
     public static function pendingReportsCount(): int
     {
         return User::where('role', 'student_intern')

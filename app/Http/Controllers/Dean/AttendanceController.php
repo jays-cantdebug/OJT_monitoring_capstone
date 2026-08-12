@@ -26,6 +26,8 @@ class AttendanceController extends Controller
 
         $assignedCount = StudentMetrics::assignedCount();
         $presentTodayCount = StudentMetrics::presentTodayCount();
+        $presentStudents = StudentMetrics::presentTodayStudents();
+        $absentStudents = StudentMetrics::absentTodayStudents();
 
         return view('dean.attendance', [
             'entries' => $entries,
@@ -33,6 +35,8 @@ class AttendanceController extends Controller
             'assignedCount' => $assignedCount,
             'presentTodayCount' => $presentTodayCount,
             'absentTodayCount' => max($assignedCount - $presentTodayCount, 0),
+            'presentStudents' => $presentStudents,
+            'absentStudents' => $absentStudents,
             'onDutyCount' => StudentMetrics::currentlyOnDutyCount(),
             'hoursLoggedToday' => StudentMetrics::hoursLoggedToday(),
             'avgComplianceRate' => StudentMetrics::avgComplianceRatePercent(),

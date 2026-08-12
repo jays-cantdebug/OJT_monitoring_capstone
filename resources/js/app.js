@@ -6,6 +6,15 @@ window.Alpine = Alpine;
 
 const PING_INTERVAL_MS = 60000;
 
+// A browser only exposes real Geolocation results on a "secure context"
+// (https://, or exactly http://localhost / 127.0.0.1) - anywhere else,
+// including a plain http:// LAN IP like a phone hitting the dev server
+// over WiFi, getCurrentPosition() fails immediately with PERMISSION_DENIED
+// and no prompt is ever shown. That reads to a student as "permission
+// denied" with nothing to grant, so it's called out as its own case here
+// rather than falling through to the generic permission-denied message.
+const INSECURE_CONTEXT_MESSAGE = 'Location access requires a secure connection. This page must be loaded over HTTPS, or from "localhost" - a plain network address (like an IP address over HTTP) will not work. Please let your administrator know.';
+
 function geolocationErrorMessage(error) {
     switch (error.code) {
         case error.PERMISSION_DENIED:
@@ -25,6 +34,7 @@ Alpine.data('timeClock', (onDuty) => ({
     latitude: null,
     longitude: null,
     pingIntervalId: null,
+    insecureContext: !window.isSecureContext,
 
     init() {
         if (onDuty) {
@@ -34,6 +44,11 @@ Alpine.data('timeClock', (onDuty) => ({
 
     requestLocationAndSubmit(formRef) {
         this.error = null;
+
+        if (!window.isSecureContext) {
+            this.error = INSECURE_CONTEXT_MESSAGE;
+            return;
+        }
 
         if (!navigator.geolocation) {
             this.error = 'Your browser does not support location access, which is required to time in or out.';
@@ -132,6 +147,12 @@ Alpine.data('liveMap', (initialOnDuty) => {
         return `/dean/students/${student.userId}`;
     }
 
+    function matchesSearch(student, rawTerm) {
+        const term = (rawTerm ?? '').trim().toLowerCase();
+
+        return term === '' || student.name.toLowerCase().includes(term);
+    }
+
     function popupHtml(student) {
         return `<p class="font-semibold text-navy">${escapeHtml(student.name)}</p>
             <a href="${profileUrl(student)}" class="text-xs font-medium text-navy hover:underline">View Profile &rarr;</a>`;
@@ -148,15 +169,41 @@ Alpine.data('liveMap', (initialOnDuty) => {
             markers[student.userId].setLatLng(latLng);
         } else {
             markers[student.userId] = L.marker(latLng, { icon: markerIcon(L, student) })
-                .bindPopup(popupHtml(student))
-                .addTo(map);
+                .bindPopup(popupHtml(student));
         }
     }
 
     return {
         students: initialOnDuty,
+        search: '',
+
+        get filteredStudents() {
+            return this.students.filter((student) => matchesSearch(student, this.search));
+        },
 
         profileUrl,
+
+        // Markers are created eagerly for every on-duty student (see
+        // upsertMarker) but only added to / removed from the map here, so
+        // the map's visible pins always match the filtered list below it.
+        syncMarkerVisibility() {
+            this.students.forEach((student) => {
+                const marker = markers[student.userId];
+
+                if (!marker) {
+                    return;
+                }
+
+                const shouldShow = matchesSearch(student, this.search);
+                const isShown = map.hasLayer(marker);
+
+                if (shouldShow && !isShown) {
+                    marker.addTo(map);
+                } else if (!shouldShow && isShown) {
+                    map.removeLayer(marker);
+                }
+            });
+        },
 
         async init() {
             const L = await import('leaflet');
@@ -177,12 +224,15 @@ Alpine.data('liveMap', (initialOnDuty) => {
             }).addTo(map);
 
             this.students.forEach((student) => upsertMarker(L, student));
+            this.syncMarkerVisibility();
 
             if (withLocation.length > 1) {
                 map.fitBounds(withLocation.map((student) => [student.latitude, student.longitude]), {
                     padding: [32, 32],
                 });
             }
+
+            this.$watch('search', () => this.syncMarkerVisibility());
 
             initEcho()
                 .private('dean.live-map')
@@ -210,6 +260,8 @@ Alpine.data('liveMap', (initialOnDuty) => {
                         this.students.push(student);
                         upsertMarker(L, student);
                     }
+
+                    this.syncMarkerVisibility();
                 });
         },
     };

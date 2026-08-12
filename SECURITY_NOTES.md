@@ -60,3 +60,17 @@ There is no Dean self-registration flow and none is planned. The first (and for 
 **Scope of the deviation:** front-end mapping library only. The GPS ping capture, storage (`gps_pings` table), and real-time broadcast layer are unaffected and were already built/verified independently of which map renderer displays them — see `app/Events/GpsPingBroadcast.php` and `app/Http/Controllers/Dean/LiveMapController.php`.
 
 **Trade-off accepted:** OpenStreetMap's public tile servers are a free shared resource with fair-use rate limits (not meant for high-traffic production use without a paid tile provider or self-hosting). Acceptable for this project's scale (thesis demo, single institution, small concurrent user count). Revisit if this ever needs to scale beyond that.
+
+## Student Account Credential Delivery — Real Email Sending Explored, Not Implemented
+
+**Status:** Investigated, blocked on external prerequisites the project doesn't currently have. Reverted to the existing on-screen display as the only delivery mechanism — no code changed.
+
+**What was requested:** when a Dean creates a Student Intern account, email the generated temporary password directly to the student's email address, in addition to (or instead of) the existing one-time on-screen display in `Dean\StudentAccountController::store`.
+
+**What was tried, and why each was blocked:**
+- **Gmail SMTP** — requires a Google Account App Password, which needs 2-Step Verification enabled on that account. Not available for the account being used.
+- **Mailtrap** — the free/demo sending setup (no custom domain) only delivers to the Mailtrap account owner's own inbox for testing purposes; it cannot deliver to arbitrary real recipients (i.e., actual students). Real delivery via Mailtrap requires verifying a sending domain, which requires DNS record access the project doesn't currently have.
+
+**Current state:** unchanged from before this investigation. `.env` still has `MAIL_MAILER=log` (the Laravel default placeholder config — outgoing mail is written to `storage/logs/laravel.log`, never actually sent). No `App\Mail` classes exist. The Dean-facing "show once" credential banner in `dean.students` (populated by `StudentAccountController::store`'s `created` view data) remains the sole way credentials reach the Dean, who is responsible for manually relaying them to the student. This was already working before this investigation started and was not touched.
+
+**Revisit when:** the institution provisions either (a) a real email account with 2-Step Verification enabled (for Gmail App Passwords), or (b) a verified sending domain with DNS access (for Mailtrap or any other transactional mail provider). At that point, wiring it up is mechanical — `config/mail.php`'s `smtp` mailer is already fully scaffolded and reads from standard `MAIL_*` env vars; only a new Mailable class + Markdown email view + one call in `StudentAccountController::store` would be needed.

@@ -4,29 +4,12 @@
 
 @section('content')
     @if ($resetPassword)
-        <div class="mb-4 rounded-xl bg-success/5 ring-1 ring-success/20 p-5">
-            <div class="flex items-start gap-3">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-success/10 text-success">
-                    <x-heroicon-o-check-circle class="h-5 w-5" />
-                </div>
-                <div>
-                    <p class="text-sm font-semibold text-success">Password reset for {{ $student->name }}.</p>
-                    <p class="mt-1 text-sm text-success">
-                        Share these credentials with the intern now — the password will not be shown again.
-                    </p>
-                </div>
-            </div>
-            <div class="mt-4 flex flex-wrap gap-3">
-                <div class="rounded-lg bg-white/70 ring-1 ring-success/20 px-4 py-2.5">
-                    <p class="text-[11px] font-bold uppercase tracking-wide text-success">Email</p>
-                    <p class="mt-0.5 font-mono text-sm text-success">{{ $resetPassword['email'] }}</p>
-                </div>
-                <div class="rounded-lg bg-white/70 ring-1 ring-success/20 px-4 py-2.5">
-                    <p class="text-[11px] font-bold uppercase tracking-wide text-success">New Password</p>
-                    <p class="mt-0.5 font-mono text-sm text-success">{{ $resetPassword['password'] }}</p>
-                </div>
-            </div>
-        </div>
+        <x-credentials-banner
+            title="Password reset for {{ $student->name }}."
+            :email="$resetPassword['email']"
+            :password="$resetPassword['password']"
+            password-label="New Password"
+        />
     @endif
 
     <div class="mb-4 flex flex-wrap items-start justify-between gap-4">
@@ -40,16 +23,26 @@
             </div>
         </div>
         <div class="flex shrink-0 items-center gap-4">
-            <form method="POST" action="{{ route('dean.students.reset-password', $student) }}" onsubmit="return confirm('Generate a new temporary password for {{ $student->name }}? Their current password will stop working immediately.');">
-                @csrf
-                <button
-                    type="submit"
-                    class="inline-flex items-center gap-1.5 rounded-md bg-gold/10 px-3 py-1.5 text-xs font-semibold text-gold hover:bg-gold/20"
-                >
-                    <x-heroicon-o-key class="h-4 w-4" />
-                    Reset Password
-                </button>
-            </form>
+            <x-confirm-modal
+                title="Reset password for {{ $student->name }}?"
+                confirm-text="Reset Password"
+                confirm-class="bg-danger hover:bg-danger/90"
+                icon="key"
+                icon-class="bg-danger/10 text-danger"
+                :action="route('dean.students.reset-password', $student)"
+            >
+                <x-slot:trigger>
+                    <button
+                        type="button"
+                        class="inline-flex items-center gap-1.5 rounded-md bg-gold/10 px-3 py-1.5 text-xs font-semibold text-gold hover:bg-gold/20"
+                    >
+                        <x-heroicon-o-key class="h-4 w-4" />
+                        Reset Password
+                    </button>
+                </x-slot:trigger>
+
+                Their current password will stop working immediately, and a new one will be generated and shown here once.
+            </x-confirm-modal>
             <a href="{{ route('dean.students') }}" class="text-xs font-medium text-navy hover:underline">
                 &larr; Back to Student Interns
             </a>

@@ -13,7 +13,7 @@
         {{ $trigger }}
     </div>
 
-    <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div x-show="open" x-cloak @keydown.escape.window="open = false" class="fixed inset-0 z-50 flex items-center justify-center px-4">
         <div
             x-show="open"
             x-transition:enter="transition ease-out duration-200"
@@ -22,7 +22,7 @@
             x-transition:leave="transition ease-in duration-150"
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
-            class="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            class="absolute inset-0 bg-black/50 backdrop-blur-sm"
             x-on:click="open = false"
         ></div>
 
@@ -42,7 +42,7 @@
                 </div>
             @endif
 
-            <h3 class="font-bold text-navy">{{ $title }}</h3>
+            <h3 class="text-sm font-semibold text-navy">{{ $title }}</h3>
             <div class="mt-2 text-sm text-black/60">
                 {{ $slot }}
             </div>

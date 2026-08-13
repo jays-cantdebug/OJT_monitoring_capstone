@@ -11,7 +11,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="h-screen overflow-hidden font-sans antialiased bg-white text-black">
+<body class="h-screen overflow-hidden font-sans antialiased bg-white text-black" x-data="gpsTracker({{ auth()->user()->openDtrEntry() ? 'true' : 'false' }})">
     <div class="flex h-full" x-data="{ sidebarOpen: false }" @keydown.escape.window="sidebarOpen = false">
         <div
             x-show="sidebarOpen"

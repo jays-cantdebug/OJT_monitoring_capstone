@@ -9,7 +9,7 @@
         </div>
     @endif
 
-    <div class="max-w-lg" x-data="timeClock({{ $openEntry ? 'true' : 'false' }})">
+    <div class="max-w-lg" x-data="timeClock()">
         <div x-show="insecureContext" x-cloak class="mb-4 rounded-xl bg-danger/5 ring-1 ring-danger/20 p-5">
             <div class="flex items-start gap-3">
                 <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-danger/10 text-danger">

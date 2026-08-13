@@ -71,6 +71,7 @@ Route::prefix('dean')->name('dean.')->middleware(['auth', 'role:dean'])->group(f
     Route::get('/students/create', [StudentAccountController::class, 'create'])->name('students.create');
     Route::post('/students', [StudentAccountController::class, 'store'])->name('students.store');
     Route::get('/students/{student}', [StudentProfileController::class, 'show'])->name('students.show');
+    Route::post('/students/{student}/reset-password', [StudentProfileController::class, 'resetPassword'])->name('students.reset-password');
 
     Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance');
 

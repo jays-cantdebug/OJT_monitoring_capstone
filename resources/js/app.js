@@ -28,19 +28,12 @@ function geolocationErrorMessage(error) {
     }
 }
 
-Alpine.data('timeClock', (onDuty) => ({
+Alpine.data('timeClock', () => ({
     requesting: false,
     error: null,
     latitude: null,
     longitude: null,
-    pingIntervalId: null,
     insecureContext: !window.isSecureContext,
-
-    init() {
-        if (onDuty) {
-            this.pingIntervalId = setInterval(() => this.sendPing(), PING_INTERVAL_MS);
-        }
-    },
 
     requestLocationAndSubmit(formRef) {
         this.error = null;
@@ -71,15 +64,43 @@ Alpine.data('timeClock', (onDuty) => ({
             { enableHighAccuracy: true, timeout: 10000 }
         );
     },
+}));
 
-    // Fired every PING_INTERVAL_MS while on duty. Silently skips a tick on
-    // failure (denied permission, offline, etc.) rather than surfacing an
-    // error — a missed location ping isn't worth interrupting the student's
-    // screen for. The server independently re-derives the open DTR entry
-    // and rejects the ping outright the instant the student times out, so
-    // there's no need to stop this interval from the client side either.
+// Mounted once on the shared student layout (not the Time In/Out page)
+// so the ping timer keeps running no matter which page the student is on
+// while their DTR entry is open. Alpine state doesn't survive a full page
+// navigation, so this restarts fresh on every page load - what it fixes is
+// pings stopping *entirely* the moment the student leaves /student/time,
+// not gaps at the exact moment of navigation.
+Alpine.data('gpsTracker', (onDuty) => ({
+    pingIntervalId: null,
+
+    init() {
+        if (onDuty) {
+            this.pingIntervalId = setInterval(() => this.sendPing(), PING_INTERVAL_MS);
+        }
+    },
+
+    destroy() {
+        if (this.pingIntervalId) {
+            clearInterval(this.pingIntervalId);
+        }
+    },
+
+    // Fired every PING_INTERVAL_MS while on duty. Failures are logged but
+    // never surfaced to the student - a missed location ping isn't worth
+    // interrupting their screen for. The server independently re-derives
+    // the open DTR entry and rejects the ping outright the instant the
+    // student times out, so there's no need to stop this interval from the
+    // client side either.
     sendPing() {
+        if (!window.isSecureContext) {
+            console.warn('GPS ping skipped: insecure context.', INSECURE_CONTEXT_MESSAGE);
+            return;
+        }
+
         if (!navigator.geolocation) {
+            console.warn('GPS ping skipped: geolocation not supported by this browser.');
             return;
         }
 
@@ -88,11 +109,54 @@ Alpine.data('timeClock', (onDuty) => ({
                 window.axios.post('/student/gps-pings', {
                     latitude: position.coords.latitude,
                     longitude: position.coords.longitude,
-                }).catch(() => {});
+                }).catch((error) => {
+                    console.warn('GPS ping failed to send.', error);
+                });
             },
-            () => {},
+            (error) => {
+                console.warn('GPS ping skipped: could not get location.', geolocationErrorMessage(error));
+            },
             { enableHighAccuracy: true, timeout: 10000 }
         );
+    },
+}));
+
+Alpine.data('photoPreview', () => ({
+    previewUrl: null,
+    fileName: null,
+    dragging: false,
+
+    onFileSelected(event) {
+        this.setPreview(event.target.files?.[0] ?? null);
+    },
+
+    onDrop(event) {
+        this.dragging = false;
+
+        const file = event.dataTransfer.files?.[0] ?? null;
+
+        if (file && file.type.startsWith('image/')) {
+            this.$refs.input.files = event.dataTransfer.files;
+        }
+
+        this.setPreview(file);
+    },
+
+    // Object URLs (unlike FileReader's base64 data URLs) don't hold the
+    // whole image in memory as a JS string - it matters here since reports
+    // allow photos up to 5MB. The previous one is revoked before replacing
+    // it so repeated file swaps don't leak memory for the life of the page.
+    setPreview(file) {
+        if (this.previewUrl) {
+            URL.revokeObjectURL(this.previewUrl);
+            this.previewUrl = null;
+            this.fileName = null;
+        }
+
+        if (file && file.type.startsWith('image/')) {
+            this.previewUrl = URL.createObjectURL(file);
+            this.fileName = file.name;
+        }
     },
 }));
 
@@ -106,6 +170,11 @@ Alpine.data('liveMap', (initialOnDuty) => {
     // them in Alpine's reactivity is a known source of breakage.
     let map = null;
     const markers = {};
+
+    // Tracks which student the search box last flew the map to, so typing
+    // further characters that still resolve to the same single match
+    // doesn't replay the fly-to/pulse on every keystroke.
+    let highlightedUserId = null;
 
     function escapeHtml(value) {
         return String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -128,15 +197,18 @@ Alpine.data('liveMap', (initialOnDuty) => {
     }
 
     // Every student on this map is already on-duty by definition (the
-    // controller only ever queries on-duty students) - the dot is a visual
-    // echo of that fact, matching the "on duty" dot used elsewhere in the
-    // app, not new information.
+    // controller only ever queries on-duty students) - the dot's color
+    // instead encodes whether this position is a real-time ping (success,
+    // green) or still just their Time In coordinate because no ping has
+    // arrived yet (warning, amber) - see hasLivePing from the controller.
     function markerIcon(L, student) {
+        const dotColor = student.hasLivePing ? 'bg-success' : 'bg-warning';
+
         return L.divIcon({
             className: '',
             html: `<span class="relative block h-9 w-9">
                 ${avatarHtml(student)}
-                <span class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-success ring-2 ring-white"></span>
+                <span class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ${dotColor} ring-2 ring-white"></span>
             </span>`,
             iconSize: [36, 36],
             iconAnchor: [18, 18],
@@ -154,23 +226,48 @@ Alpine.data('liveMap', (initialOnDuty) => {
     }
 
     function popupHtml(student) {
+        const locationNote = student.hasLivePing
+            ? ''
+            : '<p class="mt-1 text-xs text-warning">Time In location &mdash; awaiting first live update</p>';
+
         return `<p class="font-semibold text-navy">${escapeHtml(student.name)}</p>
+            ${locationNote}
             <a href="${profileUrl(student)}" class="text-xs font-medium text-navy hover:underline">View Profile &rarr;</a>`;
     }
 
+    // Every on-duty student now always has a coordinate - either a real
+    // ping or the Time In fallback from the controller - so this no longer
+    // needs to guard against missing lat/lng. Existing markers also refresh
+    // their icon and popup, not just position, so a marker visibly flips
+    // from pending (amber) to live (green) the moment its first ping lands.
     function upsertMarker(L, student) {
-        if (student.latitude == null || student.longitude == null) {
-            return;
-        }
-
         const latLng = [student.latitude, student.longitude];
 
         if (markers[student.userId]) {
-            markers[student.userId].setLatLng(latLng);
+            markers[student.userId]
+                .setLatLng(latLng)
+                .setIcon(markerIcon(L, student))
+                .setPopupContent(popupHtml(student));
         } else {
             markers[student.userId] = L.marker(latLng, { icon: markerIcon(L, student) })
                 .bindPopup(popupHtml(student));
         }
+    }
+
+    // Briefly rings the marker's icon element so a search match is obvious
+    // even once the map has already flown to it. Removed and re-added
+    // (with a reflow forced in between) rather than just added, so the
+    // animation restarts cleanly if the same marker is highlighted again.
+    function highlightMarker(marker) {
+        const el = marker.getElement();
+
+        if (!el) {
+            return;
+        }
+
+        el.classList.remove('marker-pulse');
+        void el.offsetWidth;
+        el.classList.add('marker-pulse');
     }
 
     return {
@@ -182,6 +279,23 @@ Alpine.data('liveMap', (initialOnDuty) => {
         },
 
         profileUrl,
+
+        // Frames every on-duty student (or the campus default when there
+        // are none) - used on initial load and again whenever the search
+        // box is cleared, so clearing search reads as "back out to the
+        // overview" rather than leaving the view wherever the last search
+        // happened to leave it.
+        resetView() {
+            if (this.students.length > 1) {
+                map.flyToBounds(this.students.map((student) => [student.latitude, student.longitude]), {
+                    padding: [32, 32],
+                });
+            } else if (this.students.length === 1) {
+                map.flyTo([this.students[0].latitude, this.students[0].longitude], 15);
+            } else {
+                map.flyTo(DEFAULT_MAP_CENTER, 15);
+            }
+        },
 
         // Markers are created eagerly for every on-duty student (see
         // upsertMarker) but only added to / removed from the map here, so
@@ -209,12 +323,8 @@ Alpine.data('liveMap', (initialOnDuty) => {
             const L = await import('leaflet');
             const { initEcho } = await import('./echo');
 
-            const withLocation = this.students.filter(
-                (student) => student.latitude != null && student.longitude != null
-            );
-
             map = L.map(this.$refs.map).setView(
-                withLocation.length ? [withLocation[0].latitude, withLocation[0].longitude] : DEFAULT_MAP_CENTER,
+                this.students.length ? [this.students[0].latitude, this.students[0].longitude] : DEFAULT_MAP_CENTER,
                 15
             );
 
@@ -225,14 +335,44 @@ Alpine.data('liveMap', (initialOnDuty) => {
 
             this.students.forEach((student) => upsertMarker(L, student));
             this.syncMarkerVisibility();
+            this.resetView();
 
-            if (withLocation.length > 1) {
-                map.fitBounds(withLocation.map((student) => [student.latitude, student.longitude]), {
-                    padding: [32, 32],
-                });
-            }
+            // A search that narrows to exactly one student flies the map to
+            // them and gives their marker a brief highlight pulse. Ties and
+            // empty results are left alone rather than guessing which match
+            // the Dean meant; clearing the box back to '' hands off to
+            // resetView() instead, via the dedicated branch below.
+            this.$watch('search', () => {
+                this.syncMarkerVisibility();
 
-            this.$watch('search', () => this.syncMarkerVisibility());
+                if (this.search.trim() === '') {
+                    highlightedUserId = null;
+                    this.resetView();
+                    return;
+                }
+
+                if (this.filteredStudents.length !== 1) {
+                    return;
+                }
+
+                const match = this.filteredStudents[0];
+
+                if (match.userId === highlightedUserId) {
+                    return;
+                }
+
+                highlightedUserId = match.userId;
+
+                const marker = markers[match.userId];
+
+                if (!marker) {
+                    return;
+                }
+
+                map.flyTo([match.latitude, match.longitude], 17);
+                marker.openPopup();
+                highlightMarker(marker);
+            });
 
             initEcho()
                 .private('dean.live-map')
@@ -243,6 +383,7 @@ Alpine.data('liveMap', (initialOnDuty) => {
                         existing.latitude = event.latitude;
                         existing.longitude = event.longitude;
                         existing.lastPingAt = 'just now';
+                        existing.hasLivePing = true;
                         upsertMarker(L, existing);
                     } else {
                         // A student who came on duty after this page loaded -
@@ -256,6 +397,7 @@ Alpine.data('liveMap', (initialOnDuty) => {
                             latitude: event.latitude,
                             longitude: event.longitude,
                             lastPingAt: 'just now',
+                            hasLivePing: true,
                         };
                         this.students.push(student);
                         upsertMarker(L, student);

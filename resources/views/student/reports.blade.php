@@ -51,13 +51,31 @@
                     @enderror
                 </div>
 
-                <div>
+                <div x-data="photoPreview()">
                     <label for="photo" class="block text-xs font-bold uppercase tracking-wide text-black/60 mb-1.5">Photo Evidence / Attachment *</label>
-                    <label for="photo" class="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-light-gray bg-white px-6 py-8 text-center cursor-pointer hover:border-gold">
-                        <x-heroicon-o-arrow-up-tray class="h-8 w-8 text-black/40" />
-                        <span class="text-sm font-medium text-black/60">Drag and drop photo evidence here</span>
-                        <span class="text-xs text-black/40">Supports PNG, JPG, GIF up to 5MB</span>
-                        <span class="mt-1 rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-black ring-1 ring-light-gray">Browse Files</span>
+                    <label
+                        for="photo"
+                        class="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-6 py-8 text-center cursor-pointer"
+                        :class="dragging ? 'border-gold bg-gold/5' : 'border-light-gray bg-white hover:border-gold'"
+                        @dragover.prevent="dragging = true"
+                        @dragleave.prevent="dragging = false"
+                        @drop.prevent="onDrop($event)"
+                    >
+                        <template x-if="previewUrl">
+                            <div class="flex flex-col items-center gap-2">
+                                <img :src="previewUrl" alt="Photo preview" class="h-32 w-32 rounded-lg object-cover ring-1 ring-light-gray">
+                                <span class="max-w-full truncate text-xs font-medium text-black/60" x-text="fileName"></span>
+                                <span class="mt-1 rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-black ring-1 ring-light-gray">Change Photo</span>
+                            </div>
+                        </template>
+                        <template x-if="!previewUrl">
+                            <div class="flex flex-col items-center gap-2">
+                                <x-heroicon-o-arrow-up-tray class="h-8 w-8 text-black/40" />
+                                <span class="text-sm font-medium text-black/60">Drag and drop photo evidence here</span>
+                                <span class="text-xs text-black/40">Supports PNG, JPG, GIF up to 5MB</span>
+                                <span class="mt-1 rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-black ring-1 ring-light-gray">Browse Files</span>
+                            </div>
+                        </template>
                         <input
                             type="file"
                             id="photo"
@@ -65,6 +83,8 @@
                             accept="image/*"
                             required
                             class="sr-only"
+                            x-ref="input"
+                            @change="onFileSelected($event)"
                         >
                     </label>
                     @error('photo')

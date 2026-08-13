@@ -44,7 +44,11 @@
                         <span class="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-xs font-semibold text-success">
                             <span class="h-1.5 w-1.5 rounded-full bg-success"></span>
                             <span x-text="'Since ' + student.since"></span>
-                            <span x-show="student.lastPingAt" x-text="'· last ping ' + student.lastPingAt"></span>
+                            <span x-show="student.hasLivePing" x-text="'· last ping ' + student.lastPingAt"></span>
+                        </span>
+                        <span x-show="!student.hasLivePing" class="inline-flex items-center gap-1.5 rounded-full bg-warning/10 px-2.5 py-1 text-xs font-semibold text-warning">
+                            <span class="h-1.5 w-1.5 rounded-full bg-warning"></span>
+                            Awaiting first ping
                         </span>
                     </li>
                 </template>

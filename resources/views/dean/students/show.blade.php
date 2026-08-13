@@ -14,9 +14,13 @@
 
     <div class="mb-4 flex flex-wrap items-start justify-between gap-4">
         <div class="flex items-start gap-3">
-            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
-                {{ strtoupper(substr($student->name, 0, 1)) }}
-            </div>
+            @if ($student->avatarUrl())
+                <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}" class="h-10 w-10 shrink-0 rounded-full object-cover">
+            @else
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
+                    {{ strtoupper(substr($student->name, 0, 1)) }}
+                </div>
+            @endif
             <div>
                 <h2 class="font-bold text-navy">{{ $student->name }}</h2>
                 <p class="text-sm text-black/60">{{ $student->email }}</p>

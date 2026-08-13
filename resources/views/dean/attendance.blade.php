@@ -89,9 +89,13 @@
                     @php $todayEntry = $student->dtrEntries->first(); @endphp
                     <div class="p-4">
                         <div class="flex items-center gap-3">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-success/10 text-sm font-bold text-success">
-                                {{ strtoupper(substr($student->name, 0, 1)) }}
-                            </div>
+                            @if ($student->avatarUrl())
+                                <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}" class="h-8 w-8 shrink-0 rounded-full object-cover">
+                            @else
+                                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-success/10 text-sm font-bold text-success">
+                                    {{ strtoupper(substr($student->name, 0, 1)) }}
+                                </div>
+                            @endif
                             <div class="min-w-0 flex-1">
                                 <p class="truncate text-sm font-medium text-black">{{ $student->name }}</p>
                                 <p class="truncate text-xs text-black/40">{{ $student->studentProfile?->company_name ?: 'Not yet provided' }}</p>
@@ -127,9 +131,13 @@
                         <tr class="hover:bg-light-gray/40 transition">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-success/10 text-sm font-bold text-success">
-                                        {{ strtoupper(substr($student->name, 0, 1)) }}
-                                    </div>
+                                    @if ($student->avatarUrl())
+                                        <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}" class="h-8 w-8 shrink-0 rounded-full object-cover">
+                                    @else
+                                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-success/10 text-sm font-bold text-success">
+                                            {{ strtoupper(substr($student->name, 0, 1)) }}
+                                        </div>
+                                    @endif
                                     <span class="text-black font-medium">{{ $student->name }}</span>
                                 </div>
                             </td>
@@ -174,9 +182,13 @@
                     @php $lastEntry = $student->dtrEntries->first(); @endphp
                     <div class="p-4">
                         <div class="flex items-center gap-3">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-danger/10 text-sm font-bold text-danger">
-                                {{ strtoupper(substr($student->name, 0, 1)) }}
-                            </div>
+                            @if ($student->avatarUrl())
+                                <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}" class="h-8 w-8 shrink-0 rounded-full object-cover">
+                            @else
+                                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-danger/10 text-sm font-bold text-danger">
+                                    {{ strtoupper(substr($student->name, 0, 1)) }}
+                                </div>
+                            @endif
                             <div class="min-w-0 flex-1">
                                 <p class="truncate text-sm font-medium text-black">{{ $student->name }}</p>
                                 <p class="truncate text-xs text-black/40">{{ $student->studentProfile?->company_name ?: 'Not yet provided' }}</p>
@@ -207,9 +219,13 @@
                         <tr class="hover:bg-light-gray/40 transition">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-danger/10 text-sm font-bold text-danger">
-                                        {{ strtoupper(substr($student->name, 0, 1)) }}
-                                    </div>
+                                    @if ($student->avatarUrl())
+                                        <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}" class="h-8 w-8 shrink-0 rounded-full object-cover">
+                                    @else
+                                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-danger/10 text-sm font-bold text-danger">
+                                            {{ strtoupper(substr($student->name, 0, 1)) }}
+                                        </div>
+                                    @endif
                                     <span class="text-black font-medium">{{ $student->name }}</span>
                                 </div>
                             </td>
@@ -253,7 +269,16 @@
             @forelse ($entries as $entry)
                 <div class="p-4">
                     <div class="flex items-center justify-between gap-2">
-                        <p class="truncate text-sm font-medium text-black">{{ $entry->user->name }}</p>
+                        <div class="flex min-w-0 items-center gap-3">
+                            @if ($entry->user->avatarUrl())
+                                <img src="{{ $entry->user->avatarUrl() }}" alt="{{ $entry->user->name }}" class="h-8 w-8 shrink-0 rounded-full object-cover">
+                            @else
+                                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
+                                    {{ strtoupper(substr($entry->user->name, 0, 1)) }}
+                                </div>
+                            @endif
+                            <p class="truncate text-sm font-medium text-black">{{ $entry->user->name }}</p>
+                        </div>
                         <p class="shrink-0 text-sm text-black/60">
                             @if ($entry->time_out)
                                 @php $minutes = intdiv($entry->durationInSeconds(), 60); @endphp
@@ -285,7 +310,18 @@
             <tbody class="divide-y divide-light-gray">
                 @forelse ($entries as $entry)
                     <tr>
-                        <td class="px-5 py-3 text-black font-medium">{{ $entry->user->name }}</td>
+                        <td class="px-5 py-3 text-black font-medium">
+                            <div class="flex items-center gap-3">
+                                @if ($entry->user->avatarUrl())
+                                    <img src="{{ $entry->user->avatarUrl() }}" alt="{{ $entry->user->name }}" class="h-8 w-8 shrink-0 rounded-full object-cover">
+                                @else
+                                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
+                                        {{ strtoupper(substr($entry->user->name, 0, 1)) }}
+                                    </div>
+                                @endif
+                                <span>{{ $entry->user->name }}</span>
+                            </div>
+                        </td>
                         <td class="px-5 py-3 text-black/60">{{ $entry->time_in->format('M j, Y') }}</td>
                         <td class="px-5 py-3 text-black/60">{{ $entry->time_in->format('g:i A') }}</td>
                         <td class="px-5 py-3 text-black/60">

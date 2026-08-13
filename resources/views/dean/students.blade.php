@@ -43,9 +43,13 @@
                 @foreach ($students as $student)
                     <div class="p-4">
                         <div class="flex items-center gap-3">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
-                                {{ strtoupper(substr($student['name'], 0, 1)) }}
-                            </div>
+                            @if ($student['avatarUrl'])
+                                <img src="{{ $student['avatarUrl'] }}" alt="{{ $student['name'] }}" class="h-8 w-8 shrink-0 rounded-full object-cover">
+                            @else
+                                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
+                                    {{ strtoupper(substr($student['name'], 0, 1)) }}
+                                </div>
+                            @endif
                             <div class="min-w-0 flex-1">
                                 <p class="truncate text-sm font-medium text-black">{{ $student['name'] }}</p>
                                 <p class="truncate text-xs text-black/40">{{ $student['company'] ?: 'Not yet provided' }}</p>
@@ -76,9 +80,13 @@
                         <tr class="hover:bg-light-gray/40 transition">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
-                                        {{ strtoupper(substr($student['name'], 0, 1)) }}
-                                    </div>
+                                    @if ($student['avatarUrl'])
+                                        <img src="{{ $student['avatarUrl'] }}" alt="{{ $student['name'] }}" class="h-8 w-8 shrink-0 rounded-full object-cover">
+                                    @else
+                                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
+                                            {{ strtoupper(substr($student['name'], 0, 1)) }}
+                                        </div>
+                                    @endif
                                     <span class="text-black font-medium">{{ $student['name'] }}</span>
                                 </div>
                             </td>

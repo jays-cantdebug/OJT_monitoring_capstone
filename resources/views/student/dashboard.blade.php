@@ -4,9 +4,13 @@
 
 @section('content')
     <div class="mb-6 flex items-center gap-4 rounded-xl bg-white p-5 shadow-sm ring-1 ring-light-gray">
-        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold/10 text-gold text-lg font-bold">
-            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-        </div>
+        @if (auth()->user()->avatarUrl())
+            <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="h-11 w-11 shrink-0 rounded-full object-cover">
+        @else
+            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold/10 text-gold text-lg font-bold">
+                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+            </div>
+        @endif
         <div>
             <p class="font-bold text-navy">{{ auth()->user()->name }}</p>
             <p class="text-sm text-black/60">BS in Computer Science</p>

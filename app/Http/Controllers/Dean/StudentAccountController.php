@@ -60,6 +60,7 @@ class StudentAccountController extends Controller
             ->map(fn (User $student) => [
                 'id' => $student->id,
                 'name' => $student->name,
+                'avatarUrl' => $student->avatarUrl(),
                 'company' => $student->studentProfile?->company_name,
                 'onDuty' => $student->openDtrEntry() !== null,
             ]);

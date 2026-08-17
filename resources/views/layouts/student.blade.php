@@ -41,13 +41,15 @@
 
             <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
                 @php
+                    $unreadNotificationsCount = auth()->user()->unreadNotifications()->count();
+
                     $navItems = [
                         'student.dashboard' => ['label' => 'Dashboard', 'icon' => 'home'],
                         'student.time' => ['label' => 'Time In/Out', 'icon' => 'clock'],
                         'student.attendance' => ['label' => 'Attendance', 'icon' => 'calendar'],
                         'student.reports' => ['label' => 'Daily Report', 'icon' => 'document-text'],
                         'student.internship-info' => ['label' => 'My Internship', 'icon' => 'briefcase'],
-                        'student.notifications' => ['label' => 'Notifications', 'icon' => 'bell'],
+                        'student.notifications' => ['label' => 'Notifications', 'icon' => 'bell', 'badge' => $unreadNotificationsCount],
                         'student.profile' => ['label' => 'Profile', 'icon' => 'user-circle'],
                     ];
                 @endphp
@@ -60,6 +62,12 @@
                     >
                         <x-dynamic-component :component="'heroicon-o-'.$item['icon']" class="h-5 w-5 shrink-0" />
                         <span class="truncate">{{ $item['label'] }}</span>
+                        @if (!empty($item['badge']))
+                            <span class="ml-auto flex h-5 min-w-[1.25rem] shrink-0 items-center justify-center rounded-full bg-danger px-1 text-[11px] font-bold text-white">
+                                {{ $item['badge'] > 9 ? '9+' : $item['badge'] }}
+                                <span class="sr-only">unread notifications</span>
+                            </span>
+                        @endif
                     </a>
                 @endforeach
             </nav>

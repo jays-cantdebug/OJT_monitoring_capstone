@@ -41,6 +41,8 @@
 
             <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
                 @php
+                    $unreadNotificationsCount = auth()->user()->unreadNotifications()->count();
+
                     $navItems = [
                         'dean.dashboard' => ['label' => 'Dashboard', 'icon' => 'home'],
                         'dean.live-map' => ['label' => 'Live Map', 'icon' => 'map-pin'],
@@ -48,7 +50,7 @@
                         'dean.attendance' => ['label' => 'Attendance Records', 'icon' => 'calendar'],
                         'dean.reports' => ['label' => 'Accomplishment Reports', 'icon' => 'document-text'],
                         'dean.reports-export' => ['label' => 'Reports / Export', 'icon' => 'chart-bar'],
-                        'dean.notifications' => ['label' => 'Notifications', 'icon' => 'bell'],
+                        'dean.notifications' => ['label' => 'Notifications', 'icon' => 'bell', 'badge' => $unreadNotificationsCount],
                         'dean.profile' => ['label' => 'Profile', 'icon' => 'user-circle'],
                     ];
                 @endphp
@@ -61,6 +63,12 @@
                     >
                         <x-dynamic-component :component="'heroicon-o-'.$item['icon']" class="h-5 w-5 shrink-0" />
                         <span class="truncate">{{ $item['label'] }}</span>
+                        @if (!empty($item['badge']))
+                            <span class="ml-auto flex h-5 min-w-[1.25rem] shrink-0 items-center justify-center rounded-full bg-danger px-1 text-[11px] font-bold text-white">
+                                {{ $item['badge'] > 9 ? '9+' : $item['badge'] }}
+                                <span class="sr-only">unread notifications</span>
+                            </span>
+                        @endif
                     </a>
                 @endforeach
             </nav>

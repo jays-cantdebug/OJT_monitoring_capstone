@@ -109,9 +109,6 @@
                     </button>
                     <h1 class="text-lg font-semibold text-navy truncate">@yield('title', 'Dashboard')</h1>
                 </div>
-                <div class="hidden sm:block shrink-0 text-sm text-black/60">
-                    {{ auth()->user()->name }}
-                </div>
             </header>
 
             <main class="flex-1 px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6 overflow-y-auto">

@@ -25,16 +25,19 @@
         </div>
     </div>
 
+    @php
+        $me = ['name' => auth()->user()->name, 'avatarUrl' => auth()->user()->avatarUrl()];
+    @endphp
     <div
-        x-data="myLocationMap({{ Illuminate\Support\Js::from($lastKnownLocation) }}, {{ $openEntry ? 'true' : 'false' }})"
+        x-data="myLocationMap({{ Illuminate\Support\Js::from($me) }}, {{ Illuminate\Support\Js::from($lastKnownLocation) }}, {{ $openEntry ? 'true' : 'false' }})"
         class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-6 mb-6"
     >
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-sm font-semibold text-navy">My Location</h3>
+            <h3 class="text-xs font-bold uppercase tracking-wide text-navy">My Location</h3>
             @if ($openEntry)
                 <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-success">
                     <span class="h-1.5 w-1.5 rounded-full bg-success"></span>
-                    Live &mdash; On Duty
+                    Live &mdash; Real-Time Ping Updates
                 </span>
             @else
                 <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-black/40">
@@ -44,7 +47,7 @@
             @endif
         </div>
         <p x-show="error" x-cloak class="mb-3 text-xs text-danger" x-text="error"></p>
-        <div class="relative h-72 rounded-lg bg-light-gray overflow-hidden" x-ref="map"></div>
+        <div class="relative h-96 rounded-lg bg-light-gray overflow-hidden" x-ref="map"></div>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-6 mb-6">

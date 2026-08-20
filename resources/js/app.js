@@ -164,6 +164,46 @@ Alpine.data('photoPreview', () => ({
 // location is known - real pings recenter/fit the map.
 const DEFAULT_MAP_CENTER = [9.1236, 125.5350];
 
+// Shared by liveMap (Dean) and myLocationMap (Student) so both maps render
+// pixel-identical markers by construction, not by copy-pasted styling that
+// can drift apart over time.
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;',
+    }[char]));
+}
+
+function initials(name) {
+    return escapeHtml((name ?? '').trim().charAt(0).toUpperCase());
+}
+
+function avatarHtml(person) {
+    return person.avatarUrl
+        ? `<img src="${escapeHtml(person.avatarUrl)}" alt="" class="block h-9 w-9 rounded-full border-2 border-white object-cover shadow-md">`
+        : `<span class="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-gold/10 text-sm font-bold text-gold shadow-md">${initials(person.name)}</span>`;
+}
+
+// The dot's color encodes whether this position is a real-time ping
+// (success, green) or a fallback coordinate because no live update is
+// currently available (warning, amber) - see hasLivePing.
+function markerIcon(L, person) {
+    const dotColor = person.hasLivePing ? 'bg-success' : 'bg-warning';
+
+    return L.divIcon({
+        className: '',
+        html: `<span class="relative block h-9 w-9">
+            ${avatarHtml(person)}
+            <span class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ${dotColor} ring-2 ring-white"></span>
+        </span>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+    });
+}
+
 Alpine.data('liveMap', (initialOnDuty) => {
     // Leaflet's map/marker instances are kept out of Alpine's reactive
     // proxy (plain closure variables, not `this` properties) - wrapping
@@ -175,45 +215,6 @@ Alpine.data('liveMap', (initialOnDuty) => {
     // further characters that still resolve to the same single match
     // doesn't replay the fly-to/pulse on every keystroke.
     let highlightedUserId = null;
-
-    function escapeHtml(value) {
-        return String(value ?? '').replace(/[&<>"']/g, (char) => ({
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#039;',
-        }[char]));
-    }
-
-    function initials(name) {
-        return escapeHtml((name ?? '').trim().charAt(0).toUpperCase());
-    }
-
-    function avatarHtml(student) {
-        return student.avatarUrl
-            ? `<img src="${escapeHtml(student.avatarUrl)}" alt="" class="block h-9 w-9 rounded-full border-2 border-white object-cover shadow-md">`
-            : `<span class="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-gold/10 text-sm font-bold text-gold shadow-md">${initials(student.name)}</span>`;
-    }
-
-    // Every student on this map is already on-duty by definition (the
-    // controller only ever queries on-duty students) - the dot's color
-    // instead encodes whether this position is a real-time ping (success,
-    // green) or still just their Time In coordinate because no ping has
-    // arrived yet (warning, amber) - see hasLivePing from the controller.
-    function markerIcon(L, student) {
-        const dotColor = student.hasLivePing ? 'bg-success' : 'bg-warning';
-
-        return L.divIcon({
-            className: '',
-            html: `<span class="relative block h-9 w-9">
-                ${avatarHtml(student)}
-                <span class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ${dotColor} ring-2 ring-white"></span>
-            </span>`,
-            iconSize: [36, 36],
-            iconAnchor: [18, 18],
-        });
-    }
 
     function profileUrl(student) {
         return `/dean/students/${student.userId}`;
@@ -412,11 +413,21 @@ Alpine.data('liveMap', (initialOnDuty) => {
 // A student's own position, unlike the Dean's Live Map, never needs the
 // Reverb broadcast channel (that channel is deliberately Dean-only, see
 // routes/channels.php) - it's driven straight off the browser's own
-// geolocation, the same source the existing ping loop already uses.
-Alpine.data('myLocationMap', (lastKnownLocation, onDuty) => {
+// geolocation, the same source the existing ping loop already uses. The
+// marker itself reuses the exact same markerIcon()/avatarHtml() helpers as
+// liveMap so the two maps render identically, not just similarly.
+Alpine.data('myLocationMap', (me, lastKnownLocation, onDuty) => {
     let map = null;
     let marker = null;
     let watchId = null;
+
+    function popupHtml(hasLivePing) {
+        const locationNote = hasLivePing
+            ? ''
+            : '<p class="mt-1 text-xs text-warning">Last known location &mdash; not currently live</p>';
+
+        return `<p class="font-semibold text-navy">${escapeHtml(me.name)}</p>${locationNote}`;
+    }
 
     return {
         error: null,
@@ -435,7 +446,12 @@ Alpine.data('myLocationMap', (lastKnownLocation, onDuty) => {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             }).addTo(map);
 
-            marker = L.marker(start).addTo(map);
+            // Starts amber (not live) until the first successful
+            // watchPosition callback flips it green - mirrors the Dean map's
+            // amber-to-green flip when a student's first ping arrives.
+            marker = L.marker(start, { icon: markerIcon(L, { ...me, hasLivePing: false }) })
+                .bindPopup(popupHtml(false))
+                .addTo(map);
 
             if (!onDuty) {
                 return;
@@ -455,7 +471,10 @@ Alpine.data('myLocationMap', (lastKnownLocation, onDuty) => {
                 (position) => {
                     this.error = null;
                     const latLng = [position.coords.latitude, position.coords.longitude];
-                    marker.setLatLng(latLng);
+                    marker
+                        .setLatLng(latLng)
+                        .setIcon(markerIcon(L, { ...me, hasLivePing: true }))
+                        .setPopupContent(popupHtml(true));
                     map.setView(latLng);
                 },
                 (error) => {

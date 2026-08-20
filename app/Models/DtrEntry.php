@@ -44,4 +44,28 @@ class DtrEntry extends Model
     {
         return $this->hasMany(GpsPing::class);
     }
+
+    /**
+     * Shaped for the Attendance History "View Location" map - centralized
+     * here so the mobile-card and desktop-table loops in the view don't
+     * each duplicate the formatting.
+     *
+     * @return array<string, mixed>
+     */
+    public function locationHistoryPayload(): array
+    {
+        return [
+            'date' => $this->time_in->format('M j, Y'),
+            'timeIn' => [
+                'lat' => (float) $this->time_in_latitude,
+                'lng' => (float) $this->time_in_longitude,
+                'label' => 'Time In · '.$this->time_in->format('g:i A'),
+            ],
+            'timeOut' => $this->time_out ? [
+                'lat' => (float) $this->time_out_latitude,
+                'lng' => (float) $this->time_out_longitude,
+                'label' => 'Time Out · '.$this->time_out->format('g:i A'),
+            ] : null,
+        ];
+    }
 }

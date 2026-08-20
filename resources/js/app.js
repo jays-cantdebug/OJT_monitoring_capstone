@@ -204,6 +204,20 @@ function markerIcon(L, person) {
     });
 }
 
+// Used by locationLightbox for the Attendance History "View Location" map -
+// a plain colored pin, not an avatar-based marker like markerIcon() above.
+// This isn't "a person's live position," it's "where a past event
+// happened," so it deliberately gets its own simpler visual treatment
+// rather than forcing the avatar marker to mean something it doesn't here.
+function eventMarkerIcon(L, label, colorClass) {
+    return L.divIcon({
+        className: '',
+        html: `<span class="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white ${colorClass} text-[10px] font-bold text-white shadow-md">${escapeHtml(label)}</span>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+    });
+}
+
 Alpine.data('liveMap', (initialOnDuty) => {
     // Leaflet's map/marker instances are kept out of Alpine's reactive
     // proxy (plain closure variables, not `this` properties) - wrapping
@@ -488,6 +502,74 @@ Alpine.data('myLocationMap', (me, lastKnownLocation, onDuty) => {
             if (watchId !== null) {
                 navigator.geolocation.clearWatch(watchId);
             }
+        },
+    };
+});
+
+// One shared modal instance for the whole Attendance History page rather
+// than one Leaflet map per row - show() re-centers/re-pins the same map
+// instance on whichever entry was clicked. The map is created lazily on
+// the first open (Leaflet needs a visible, correctly-sized container,
+// which the modal's div only has once x-show has actually revealed it)
+// and then left alive for subsequent opens rather than torn down each
+// time, avoiding Leaflet's "container is already initialized" error.
+Alpine.data('locationLightbox', () => {
+    let map = null;
+    let timeInMarker = null;
+    let timeOutMarker = null;
+
+    return {
+        open: false,
+        date: null,
+        hasTimeOut: false,
+
+        async show(entry) {
+            this.date = entry.date;
+            this.hasTimeOut = entry.timeOut !== null;
+            this.open = true;
+
+            await this.$nextTick();
+
+            const L = await import('leaflet');
+
+            if (!map) {
+                map = L.map(this.$refs.map);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                }).addTo(map);
+            } else {
+                map.invalidateSize();
+            }
+
+            if (timeInMarker) {
+                map.removeLayer(timeInMarker);
+            }
+            if (timeOutMarker) {
+                map.removeLayer(timeOutMarker);
+                timeOutMarker = null;
+            }
+
+            const timeInLatLng = [entry.timeIn.lat, entry.timeIn.lng];
+            timeInMarker = L.marker(timeInLatLng, { icon: eventMarkerIcon(L, 'IN', 'bg-success') })
+                .bindPopup(entry.timeIn.label)
+                .addTo(map);
+
+            if (entry.timeOut) {
+                const timeOutLatLng = [entry.timeOut.lat, entry.timeOut.lng];
+                timeOutMarker = L.marker(timeOutLatLng, { icon: eventMarkerIcon(L, 'OUT', 'bg-navy') })
+                    .bindPopup(entry.timeOut.label)
+                    .addTo(map);
+
+                map.flyToBounds([timeInLatLng, timeOutLatLng], { padding: [40, 40], maxZoom: 17 });
+            } else {
+                map.setView(timeInLatLng, 16);
+            }
+        },
+
+        close() {
+            this.open = false;
         },
     };
 });

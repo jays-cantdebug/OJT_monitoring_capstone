@@ -17,7 +17,6 @@ class DashboardController extends Controller
             'pendingReportsCount' => StudentMetrics::pendingReportsCount(),
             'avgComplianceRate' => StudentMetrics::avgComplianceRatePercent(),
             'recentActivity' => StudentMetrics::recentActivity(),
-            'recentlyAdded' => StudentMetrics::recentlyAdded(),
         ]);
     }
 }

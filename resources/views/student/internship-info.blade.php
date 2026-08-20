@@ -13,10 +13,38 @@
                 <p class="text-sm text-black/60">Company details, supervisor directory, and internship document checklist.</p>
             </div>
         </div>
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-3 py-1.5 text-xs font-semibold text-success shrink-0">
-            <span class="h-2 w-2 rounded-full bg-success"></span>
-            Device GPS Status — Location Enabled
-        </span>
+        <div class="flex items-center gap-2 shrink-0">
+            <a href="{{ route('student.attendance') }}" class="inline-flex items-center gap-1.5 rounded-md bg-navy px-3.5 py-2 text-xs font-semibold text-white shadow-sm hover:bg-navy/90">
+                <x-heroicon-o-calendar class="h-4 w-4" />
+                View Log / List
+            </a>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-3 py-1.5 text-xs font-semibold text-success">
+                <span class="h-2 w-2 rounded-full bg-success"></span>
+                Device GPS Status — Location Enabled
+            </span>
+        </div>
+    </div>
+
+    <div
+        x-data="myLocationMap({{ Illuminate\Support\Js::from($lastKnownLocation) }}, {{ $openEntry ? 'true' : 'false' }})"
+        class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-6 mb-6"
+    >
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-semibold text-navy">My Location</h3>
+            @if ($openEntry)
+                <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-success">
+                    <span class="h-1.5 w-1.5 rounded-full bg-success"></span>
+                    Live &mdash; On Duty
+                </span>
+            @else
+                <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-black/40">
+                    <span class="h-1.5 w-1.5 rounded-full bg-light-gray"></span>
+                    Off Duty &mdash; Last Known Location
+                </span>
+            @endif
+        </div>
+        <p x-show="error" x-cloak class="mb-3 text-xs text-danger" x-text="error"></p>
+        <div class="relative h-72 rounded-lg bg-light-gray overflow-hidden" x-ref="map"></div>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-6 mb-6">
@@ -187,7 +215,6 @@
                 ['title' => 'Medical Certificate', 'status' => 'Approved', 'date' => 'Jun 12, 2026'],
                 ['title' => 'Resume', 'status' => 'Approved', 'date' => 'Jun 12, 2026'],
                 ['title' => 'Daily Time Record', 'status' => 'Pending', 'date' => null],
-                ['title' => 'Weekly Reports', 'status' => 'Submitted', 'date' => 'Aug 3, 2026'],
                 ['title' => 'Final Report', 'status' => 'Pending', 'date' => null],
                 ['title' => 'Certificate of Completion', 'status' => 'Pending', 'date' => null],
             ] as $doc)

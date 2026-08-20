@@ -3,12 +3,35 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    public function create()
+    {
+        return view('auth.register');
+    }
+
+    public function store(RegisterRequest $request)
+    {
+        $user = User::create([
+            'name' => $request->validated('name'),
+            'email' => $request->validated('email'),
+            'password' => $request->validated('password'),
+            'role' => 'student_intern',
+            'status' => 'pending',
+        ]);
+
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return redirect()->route('pending-approval');
+    }
+
     public function login()
     {
         return view('auth.login');
@@ -27,9 +50,21 @@ class AuthController extends Controller
             ]);
         }
 
+        $user = Auth::user();
+
+        if ($user->isRejected()) {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'email' => 'These credentials do not match our records.',
+            ]);
+        }
+
         $request->session()->regenerate();
 
-        $user = Auth::user();
+        if ($user->isPending()) {
+            return redirect()->route('pending-approval');
+        }
 
         return redirect()->route($user->isDean() ? 'dean.dashboard' : 'student.dashboard');
     }

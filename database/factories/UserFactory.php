@@ -52,4 +52,25 @@ class UserFactory extends Factory
             'role' => 'dean',
         ]);
     }
+
+    /**
+     * Indicate that the user is a self-registered account awaiting
+     * Dean approval.
+     */
+    public function pending(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'pending',
+        ]);
+    }
+
+    /**
+     * Indicate that the user's self-registration was rejected.
+     */
+    public function rejected(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'rejected',
+        ]);
+    }
 }

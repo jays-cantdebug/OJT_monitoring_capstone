@@ -30,33 +30,6 @@
                 <p class="font-bold text-navy">{{ auth()->user()->name }}</p>
                 <span class="mt-2 inline-block rounded-full bg-gold/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-gold">Student</span>
             </div>
-
-            <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-5">
-                <h3 class="text-xs font-bold uppercase tracking-wide text-black/40 mb-3">School Authority Details</h3>
-                <ul class="space-y-3 text-sm">
-                    <li class="flex items-start gap-3">
-                        <x-heroicon-o-identification class="h-5 w-5 shrink-0 text-black/40" />
-                        <div>
-                            <p class="text-black/40 text-xs">Department</p>
-                            <p class="font-medium text-black">Computer Science, Year 3</p>
-                        </div>
-                    </li>
-                    <li class="flex items-start gap-3">
-                        <x-heroicon-o-globe-alt class="h-5 w-5 shrink-0 text-black/40" />
-                        <div>
-                            <p class="text-black/40 text-xs">Institutional Domain</p>
-                            <p class="font-medium text-black">normi.edu</p>
-                        </div>
-                    </li>
-                    <li class="flex items-start gap-3">
-                        <x-heroicon-o-check-circle class="h-5 w-5 shrink-0 text-black/40" />
-                        <div>
-                            <p class="text-black/40 text-xs">Access Authority</p>
-                            <p class="font-medium text-black">Authorized Session User</p>
-                        </div>
-                    </li>
-                </ul>
-            </div>
         </div>
 
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-5">
@@ -167,5 +140,110 @@
                 </button>
             </form>
         </div>
+    </div>
+
+    <div class="mt-4 bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-5">
+        <h2 class="text-sm font-semibold text-navy mb-4">Personal &amp; Guardian Information</h2>
+
+        <form method="POST" action="{{ route('student.personal-info.update') }}" class="space-y-5">
+            @csrf
+            @method('PUT')
+
+            <div>
+                <label for="personal_email" class="block text-xs font-bold uppercase tracking-wide text-black/60">Personal Email Address</label>
+                <input
+                    type="email"
+                    id="personal_email"
+                    name="personal_email"
+                    value="{{ old('personal_email', $profile->personal_email) }}"
+                    placeholder="you@example.com"
+                    class="mt-1.5 block w-full rounded-md border-0 bg-light-gray py-2.5 px-3 text-sm text-black placeholder:text-black/40 focus:ring-2 focus:ring-navy/40"
+                >
+                @error('personal_email')
+                    <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label for="address" class="block text-xs font-bold uppercase tracking-wide text-black/60">Home Address</label>
+                <textarea
+                    id="address"
+                    name="address"
+                    rows="2"
+                    class="mt-1.5 block w-full rounded-md border-0 bg-light-gray py-2.5 px-3 text-sm text-black focus:ring-2 focus:ring-navy/40"
+                >{{ old('address', $profile->address) }}</textarea>
+                @error('address')
+                    <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="parent_name" class="block text-xs font-bold uppercase tracking-wide text-black/60">Parent's Name</label>
+                    <input
+                        type="text"
+                        id="parent_name"
+                        name="parent_name"
+                        value="{{ old('parent_name', $profile->parent_name) }}"
+                        class="mt-1.5 block w-full rounded-md border-0 bg-light-gray py-2.5 px-3 text-sm text-black focus:ring-2 focus:ring-navy/40"
+                    >
+                    @error('parent_name')
+                        <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div>
+                    <label for="parent_contact" class="block text-xs font-bold uppercase tracking-wide text-black/60">Parent's Contact Number</label>
+                    <input
+                        type="text"
+                        id="parent_contact"
+                        name="parent_contact"
+                        value="{{ old('parent_contact', $profile->parent_contact) }}"
+                        placeholder="09XX XXX XXXX"
+                        class="mt-1.5 block w-full rounded-md border-0 bg-light-gray py-2.5 px-3 text-sm text-black placeholder:text-black/40 focus:ring-2 focus:ring-navy/40"
+                    >
+                    @error('parent_contact')
+                        <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="guardian_name" class="block text-xs font-bold uppercase tracking-wide text-black/60">Guardian's Name</label>
+                    <input
+                        type="text"
+                        id="guardian_name"
+                        name="guardian_name"
+                        value="{{ old('guardian_name', $profile->guardian_name) }}"
+                        class="mt-1.5 block w-full rounded-md border-0 bg-light-gray py-2.5 px-3 text-sm text-black focus:ring-2 focus:ring-navy/40"
+                    >
+                    @error('guardian_name')
+                        <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div>
+                    <label for="guardian_contact" class="block text-xs font-bold uppercase tracking-wide text-black/60">Guardian's Contact Number</label>
+                    <input
+                        type="text"
+                        id="guardian_contact"
+                        name="guardian_contact"
+                        value="{{ old('guardian_contact', $profile->guardian_contact) }}"
+                        placeholder="09XX XXX XXXX"
+                        class="mt-1.5 block w-full rounded-md border-0 bg-light-gray py-2.5 px-3 text-sm text-black placeholder:text-black/40 focus:ring-2 focus:ring-navy/40"
+                    >
+                    @error('guardian_contact')
+                        <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            <button
+                type="submit"
+                class="inline-flex items-center gap-2 justify-center rounded-md bg-gold px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-gold/90"
+            >
+                <x-heroicon-o-check class="h-4 w-4" />
+                Save Changes
+            </button>
+        </form>
     </div>
 @endsection

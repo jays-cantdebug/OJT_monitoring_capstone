@@ -35,7 +35,7 @@
         get filtered() {
             return this.reports
                 .filter(r => this.activeTab === 'All' || (this.activeTab === 'Today' && this.isToday(r)) || (this.activeTab === 'This Week' && this.isThisWeek(r)))
-                .filter(r => !this.search || r.name.toLowerCase().includes(this.search.toLowerCase()) || r.summary.toLowerCase().includes(this.search.toLowerCase()));
+                .filter(r => !this.search || r.name.toLowerCase().includes(this.search.toLowerCase()) || r.activitiesPerformed.toLowerCase().includes(this.search.toLowerCase()));
         },
         get todayCount() {
             return this.reports.filter(r => this.isToday(r)).length;
@@ -66,16 +66,27 @@
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray divide-y divide-light-gray">
             <template x-for="report in filtered" :key="report.name + report.dateIso">
                 <div class="p-6 flex items-start justify-between gap-4">
-                    <div class="flex items-start gap-4">
+                    <div class="flex items-start gap-4 min-w-0 flex-1">
                         <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning/10 text-warning">
                             <x-heroicon-o-document-text class="h-5 w-5" />
                         </div>
-                        <div>
+                        <div class="min-w-0 flex-1 space-y-2">
                             <p class="text-sm font-semibold text-black">
                                 <span x-text="report.name"></span>
                                 <span class="font-normal text-black/40" x-text="'— ' + report.date"></span>
                             </p>
-                            <p class="mt-1 text-sm text-black/60" x-text="report.summary"></p>
+                            <div>
+                                <p class="text-[11px] font-bold uppercase tracking-wide text-black/40">Activity Performed</p>
+                                <p class="text-sm text-black/60" x-text="report.activitiesPerformed"></p>
+                            </div>
+                            <div>
+                                <p class="text-[11px] font-bold uppercase tracking-wide text-black/40">Problems / Bottlenecks</p>
+                                <p class="text-sm text-black/60" x-text="report.problemsEncountered"></p>
+                            </div>
+                            <div>
+                                <p class="text-[11px] font-bold uppercase tracking-wide text-black/40">Learnings &amp; Takeaways</p>
+                                <p class="text-sm text-black/60" x-text="report.learningsAcquired"></p>
+                            </div>
                         </div>
                     </div>
                     <div class="flex items-center gap-3 shrink-0">

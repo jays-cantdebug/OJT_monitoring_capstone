@@ -160,9 +160,9 @@ Alpine.data('photoPreview', () => ({
     },
 }));
 
-// Fallback map center (NORMI campus, Cagayan de Oro) used only until the
-// first student location is known - real pings recenter/fit the map.
-const DEFAULT_MAP_CENTER = [8.4822, 124.6472];
+// Fallback map center (Cabadbaran City) used only until the first student
+// location is known - real pings recenter/fit the map.
+const DEFAULT_MAP_CENTER = [9.1236, 125.5350];
 
 Alpine.data('liveMap', (initialOnDuty) => {
     // Leaflet's map/marker instances are kept out of Alpine's reactive
@@ -405,6 +405,70 @@ Alpine.data('liveMap', (initialOnDuty) => {
 
                     this.syncMarkerVisibility();
                 });
+        },
+    };
+});
+
+// A student's own position, unlike the Dean's Live Map, never needs the
+// Reverb broadcast channel (that channel is deliberately Dean-only, see
+// routes/channels.php) - it's driven straight off the browser's own
+// geolocation, the same source the existing ping loop already uses.
+Alpine.data('myLocationMap', (lastKnownLocation, onDuty) => {
+    let map = null;
+    let marker = null;
+    let watchId = null;
+
+    return {
+        error: null,
+
+        async init() {
+            const L = await import('leaflet');
+
+            const start = lastKnownLocation
+                ? [lastKnownLocation.latitude, lastKnownLocation.longitude]
+                : DEFAULT_MAP_CENTER;
+
+            map = L.map(this.$refs.map).setView(start, 15);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            }).addTo(map);
+
+            marker = L.marker(start).addTo(map);
+
+            if (!onDuty) {
+                return;
+            }
+
+            if (!window.isSecureContext) {
+                this.error = INSECURE_CONTEXT_MESSAGE;
+                return;
+            }
+
+            if (!navigator.geolocation) {
+                this.error = 'Your browser does not support location access.';
+                return;
+            }
+
+            watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    this.error = null;
+                    const latLng = [position.coords.latitude, position.coords.longitude];
+                    marker.setLatLng(latLng);
+                    map.setView(latLng);
+                },
+                (error) => {
+                    this.error = geolocationErrorMessage(error);
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        },
+
+        destroy() {
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+            }
         },
     };
 });

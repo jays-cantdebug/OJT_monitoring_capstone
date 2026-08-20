@@ -16,7 +16,10 @@ class StudentMetrics
 {
     public static function assignedCount(): int
     {
-        return User::where('role', 'student_intern')->count();
+        // Excludes pending/rejected self-registered accounts - matches
+        // StudentAccountController's Student Interns list, which is scoped
+        // to approved accounts only.
+        return User::where('role', 'student_intern')->where('status', 'approved')->count();
     }
 
     public static function activeCount(): int
@@ -124,18 +127,6 @@ class StudentMetrics
         }
 
         return (int) round($rates->avg());
-    }
-
-    public static function recentlyAdded(int $limit = 3): Collection
-    {
-        return User::where('role', 'student_intern')
-            ->orderByDesc('created_at')
-            ->limit($limit)
-            ->get()
-            ->map(fn (User $student) => [
-                'name' => $student->name,
-                'date' => $student->created_at->format('M j, Y'),
-            ]);
     }
 
     /**

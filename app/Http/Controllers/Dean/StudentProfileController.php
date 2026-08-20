@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Dean;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Dean\UpdateStudentRequest;
+use App\Models\AuditLog;
 use App\Models\DtrEntry;
 use App\Models\StudentProfile;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -16,6 +19,55 @@ class StudentProfileController extends Controller
         abort_unless($student->isStudentIntern(), 404);
 
         return $this->showView($student);
+    }
+
+    public function edit(User $student): View
+    {
+        abort_unless($student->isStudentIntern(), 404);
+
+        $profile = $student->studentProfile ?? new StudentProfile;
+
+        return view('dean.students.edit', [
+            'student' => $student,
+            'profile' => $profile,
+        ]);
+    }
+
+    public function update(UpdateStudentRequest $request, User $student): RedirectResponse
+    {
+        abort_unless($student->isStudentIntern(), 404);
+
+        $validated = $request->validated();
+        $profile = $student->studentProfile ?? new StudentProfile(['user_id' => $student->id]);
+
+        $changes = [];
+
+        if ($student->name !== $validated['name']) {
+            $changes['name'] = ['from' => $student->name, 'to' => $validated['name']];
+        }
+
+        $newVerified = $request->boolean('is_verified');
+        if ((bool) $profile->is_verified !== $newVerified) {
+            $changes['is_verified'] = ['from' => (bool) $profile->is_verified, 'to' => $newVerified];
+        }
+
+        $student->update(['name' => $validated['name']]);
+
+        StudentProfile::updateOrCreate(
+            ['user_id' => $student->id],
+            ['is_verified' => $newVerified],
+        );
+
+        if ($changes !== []) {
+            AuditLog::create([
+                'actor_id' => $request->user()->id,
+                'subject_id' => $student->id,
+                'action' => 'updated_profile',
+                'changes' => $changes,
+            ]);
+        }
+
+        return redirect()->route('dean.students.show', $student)->with('status', "{$student->name}'s record was updated.");
     }
 
     public function resetPassword(User $student): View
@@ -43,6 +95,11 @@ class StudentProfileController extends Controller
         $totalHoursLogged = intdiv($completedEntries->sum(fn (DtrEntry $entry) => $entry->durationInSeconds()), 3600);
         $reportsSubmitted = $student->accomplishmentReports()->count();
 
+        $auditLogs = AuditLog::where('subject_id', $student->id)
+            ->with('actor')
+            ->latest('created_at')
+            ->get();
+
         return view('dean.students.show', [
             'student' => $student,
             'profile' => $profile,
@@ -50,6 +107,7 @@ class StudentProfileController extends Controller
             'totalHoursLogged' => $totalHoursLogged,
             'reportsSubmitted' => $reportsSubmitted,
             'resetPassword' => $resetPassword,
+            'auditLogs' => $auditLogs,
         ]);
     }
 }

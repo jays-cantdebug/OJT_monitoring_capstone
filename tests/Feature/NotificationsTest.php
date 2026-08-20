@@ -52,7 +52,9 @@ class NotificationsTest extends TestCase
         ]);
 
         $response = $this->actingAs($student)->post('/student/reports', [
-            'description' => 'Worked on the monitoring dashboard.',
+            'activities_performed' => 'Worked on the monitoring dashboard.',
+            'problems_encountered' => 'None today.',
+            'learnings_acquired' => 'Learned how the ping pipeline works.',
             'photo' => UploadedFile::fake()->image('proof.jpg'),
         ]);
 
@@ -93,7 +95,9 @@ class NotificationsTest extends TestCase
         ]);
         $compliantStudent->accomplishmentReports()->create([
             'report_date' => $yesterday,
-            'description' => 'Did the work.',
+            'activities_performed' => 'Did the work.',
+            'problems_encountered' => 'None.',
+            'learnings_acquired' => 'Learned a lot.',
             'photo_path' => 'accomplishment-reports/fake.jpg',
         ]);
 

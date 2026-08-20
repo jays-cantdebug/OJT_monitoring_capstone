@@ -10,7 +10,9 @@ class AccomplishmentReport extends Model
     protected $fillable = [
         'user_id',
         'report_date',
-        'description',
+        'activities_performed',
+        'problems_encountered',
+        'learnings_acquired',
         'photo_path',
     ];
 

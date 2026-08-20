@@ -23,7 +23,7 @@
                 </div>
                 <span class="rounded-full bg-light-gray px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-black/60">Total</span>
             </div>
-            <p class="mt-3 text-xs font-bold uppercase tracking-wide text-black/40">Assigned Interns</p>
+            <p class="mt-3 text-xs font-bold uppercase tracking-wide text-black/40">Total Interns</p>
             <p class="mt-1 text-2xl font-bold text-navy">{{ $assignedCount }}</p>
             <p class="mt-1 text-xs text-black/60">Provisioned by you</p>
         </div>
@@ -89,46 +89,22 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-5">
-            <h2 class="text-sm font-semibold text-navy mb-3">Recent Activity</h2>
-            <ul class="space-y-1">
-                @forelse ($recentActivity as $item)
-                    <li class="flex items-start gap-3 rounded-lg px-2 py-2 -mx-2 hover:bg-light-gray/40 transition">
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full {{ $item['badge'] }}">
-                            <x-dynamic-component :component="'heroicon-o-'.$item['icon']" class="h-4 w-4" />
-                        </div>
-                        <div class="min-w-0">
-                            <p class="text-sm text-black">{{ $item['text'] }}</p>
-                            <p class="mt-0.5 text-xs text-black/40">{{ $item['time'] }}</p>
-                        </div>
-                    </li>
-                @empty
-                    <li class="py-4 text-sm text-black/40">No recent activity yet.</li>
-                @endforelse
-            </ul>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-5">
-            <h2 class="text-sm font-semibold text-navy mb-3">Recently Added Interns</h2>
-            <ul class="space-y-1">
-                @forelse ($recentlyAdded as $item)
-                    <li class="flex items-start gap-3 rounded-lg px-2 py-2 -mx-2 hover:bg-light-gray/40 transition">
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/10 text-gold">
-                            <x-heroicon-o-user-plus class="h-4 w-4" />
-                        </div>
-                        <div class="min-w-0">
-                            <p class="text-sm font-medium text-black">{{ $item['name'] }}</p>
-                            <p class="mt-0.5 text-xs text-black/40">Added {{ $item['date'] }}</p>
-                        </div>
-                    </li>
-                @empty
-                    <li class="py-4 text-sm text-black/40">No interns added yet.</li>
-                @endforelse
-            </ul>
-            <a href="{{ route('dean.students') }}" class="mt-3 inline-flex items-center gap-1 text-sm font-medium text-navy hover:underline">
-                View all interns &rarr;
-            </a>
-        </div>
+    <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-5">
+        <h2 class="text-sm font-semibold text-navy mb-3">Recent Activity</h2>
+        <ul class="space-y-1">
+            @forelse ($recentActivity as $item)
+                <li class="flex items-start gap-3 rounded-lg px-2 py-2 -mx-2 hover:bg-light-gray/40 transition">
+                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full {{ $item['badge'] }}">
+                        <x-dynamic-component :component="'heroicon-o-'.$item['icon']" class="h-4 w-4" />
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-sm text-black">{{ $item['text'] }}</p>
+                        <p class="mt-0.5 text-xs text-black/40">{{ $item['time'] }}</p>
+                    </div>
+                </li>
+            @empty
+                <li class="py-4 text-sm text-black/40">No recent activity yet.</li>
+            @endforelse
+        </ul>
     </div>
 @endsection

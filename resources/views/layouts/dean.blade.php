@@ -42,10 +42,12 @@
             <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
                 @php
                     $unreadNotificationsCount = auth()->user()->unreadNotifications()->count();
+                    $pendingApprovalsCount = \App\Models\User::where('role', 'student_intern')->where('status', 'pending')->count();
 
                     $navItems = [
                         'dean.dashboard' => ['label' => 'Dashboard', 'icon' => 'home'],
                         'dean.live-map' => ['label' => 'Live Map', 'icon' => 'map-pin'],
+                        'dean.pending-approvals' => ['label' => 'Pending Approvals', 'icon' => 'clock', 'badge' => $pendingApprovalsCount],
                         'dean.students' => ['label' => 'Student Interns', 'icon' => 'user-group'],
                         'dean.attendance' => ['label' => 'Attendance Records', 'icon' => 'calendar'],
                         'dean.reports' => ['label' => 'Accomplishment Reports', 'icon' => 'document-text'],

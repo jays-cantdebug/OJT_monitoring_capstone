@@ -37,16 +37,46 @@
                 @csrf
 
                 <div>
-                    <label for="description" class="block text-xs font-bold uppercase tracking-wide text-black/60">Activity Performed *</label>
+                    <label for="activities_performed" class="block text-xs font-bold uppercase tracking-wide text-black/60">Activity Performed *</label>
                     <textarea
-                        id="description"
-                        name="description"
-                        rows="5"
+                        id="activities_performed"
+                        name="activities_performed"
+                        rows="4"
                         required
                         placeholder="Draft accomplishments, tasks cleared, features deployed, or assignments worked on today..."
                         class="mt-1.5 block w-full rounded-md border-0 bg-light-gray py-2.5 px-3 text-sm text-black placeholder:text-black/40 focus:ring-2 focus:ring-navy/40"
-                    >{{ old('description') }}</textarea>
-                    @error('description')
+                    >{{ old('activities_performed') }}</textarea>
+                    @error('activities_performed')
+                        <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="problems_encountered" class="block text-xs font-bold uppercase tracking-wide text-black/60">Problems / Bottlenecks Encountered *</label>
+                    <textarea
+                        id="problems_encountered"
+                        name="problems_encountered"
+                        rows="3"
+                        required
+                        placeholder="Any blockers, difficulties, or issues you ran into today..."
+                        class="mt-1.5 block w-full rounded-md border-0 bg-light-gray py-2.5 px-3 text-sm text-black placeholder:text-black/40 focus:ring-2 focus:ring-navy/40"
+                    >{{ old('problems_encountered') }}</textarea>
+                    @error('problems_encountered')
+                        <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="learnings_acquired" class="block text-xs font-bold uppercase tracking-wide text-black/60">Learning &amp; Takeaways Acquired *</label>
+                    <textarea
+                        id="learnings_acquired"
+                        name="learnings_acquired"
+                        rows="3"
+                        required
+                        placeholder="New skills, insights, or lessons you picked up today..."
+                        class="mt-1.5 block w-full rounded-md border-0 bg-light-gray py-2.5 px-3 text-sm text-black placeholder:text-black/40 focus:ring-2 focus:ring-navy/40"
+                    >{{ old('learnings_acquired') }}</textarea>
+                    @error('learnings_acquired')
                         <p class="mt-1 text-sm text-danger">{{ $message }}</p>
                     @enderror
                 </div>
@@ -113,9 +143,20 @@
                 @foreach ($reports as $report)
                     <li class="py-4">
                         <div class="flex items-start justify-between gap-4">
-                            <div>
+                            <div class="min-w-0 flex-1 space-y-2">
                                 <p class="text-sm font-medium text-black">{{ $report->report_date->format('M j, Y') }}</p>
-                                <p class="mt-1 text-sm text-black/60">{{ $report->description }}</p>
+                                <div>
+                                    <p class="text-[11px] font-bold uppercase tracking-wide text-black/40">Activity Performed</p>
+                                    <p class="text-sm text-black/60">{{ $report->activities_performed }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[11px] font-bold uppercase tracking-wide text-black/40">Problems / Bottlenecks</p>
+                                    <p class="text-sm text-black/60">{{ $report->problems_encountered }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[11px] font-bold uppercase tracking-wide text-black/40">Learnings &amp; Takeaways</p>
+                                    <p class="text-sm text-black/60">{{ $report->learnings_acquired }}</p>
+                                </div>
                             </div>
                             <a href="{{ $report->photoUrl() }}" target="_blank" rel="noopener" @click.prevent="lightboxUrl = '{{ $report->photoUrl() }}'">
                                 <img

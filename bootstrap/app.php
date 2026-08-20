@@ -16,10 +16,15 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
+            'approved' => \App\Http\Middleware\EnsureUserIsApproved::class,
         ]);
 
         $middleware->redirectUsersTo(function ($request) {
             $user = $request->user();
+
+            if ($user->isPending()) {
+                return route('pending-approval');
+            }
 
             return route($user->isDean() ? 'dean.dashboard' : 'student.dashboard');
         });

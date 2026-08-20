@@ -17,7 +17,9 @@ class AccomplishmentReportController extends Controller
                 'name' => $report->user->name,
                 'date' => $report->report_date->format('M j, Y'),
                 'dateIso' => $report->report_date->toDateString(),
-                'summary' => $report->description,
+                'activitiesPerformed' => $report->activities_performed,
+                'problemsEncountered' => $report->problems_encountered,
+                'learningsAcquired' => $report->learnings_acquired,
                 'photoUrl' => $report->photoUrl(),
             ]);
 

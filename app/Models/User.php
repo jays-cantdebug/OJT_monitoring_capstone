@@ -26,6 +26,7 @@ class User extends Authenticatable
         'avatar_path',
         'password',
         'role',
+        'status',
     ];
 
     /**
@@ -59,6 +60,21 @@ class User extends Authenticatable
     public function isStudentIntern(): bool
     {
         return $this->role === 'student_intern';
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status === 'approved';
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === 'rejected';
     }
 
     public function avatarUrl(): ?string

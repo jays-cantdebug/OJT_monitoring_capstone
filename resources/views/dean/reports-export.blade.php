@@ -35,6 +35,9 @@
             <button type="submit" formaction="{{ route('dean.reports-export.download') }}" class="rounded-md bg-gold px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-gold/90">
                 Export PDF
             </button>
+            <button type="submit" formaction="{{ route('dean.reports-export.download-csv') }}" class="rounded-md bg-white px-4 py-2.5 text-sm font-semibold text-navy ring-1 ring-navy/20 hover:bg-light-gray/40">
+                Export CSV
+            </button>
         </form>
 
         @error('date_to')

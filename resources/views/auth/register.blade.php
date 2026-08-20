@@ -1,6 +1,6 @@
 @extends('layouts.guest')
 
-@section('title', 'Log In')
+@section('title', 'Sign Up')
 
 @section('header')
     <div class="mb-5 text-center">
@@ -10,8 +10,9 @@
 
         <p class="text-xs font-bold uppercase tracking-wide text-black/60">Northern Mindanao Colleges, Inc.</p>
         <h1 class="mt-2 text-xl font-bold text-navy leading-snug">
-            Web-based On-the-Job Monitoring and Reporting System with GPS
+            Student Intern Sign Up
         </h1>
+        <p class="mt-2 text-sm text-black/60">Your account will need Dean approval before you can log in.</p>
 
         <hr class="mt-4 border-light-gray">
     </div>
@@ -20,12 +21,34 @@
 @section('content')
     <form
         method="POST"
-        action="{{ route('login') }}"
+        action="{{ route('register') }}"
         class="space-y-3"
         x-data="{ submitting: false }"
         @submit="submitting = true"
     >
         @csrf
+
+        <div>
+            <label for="name" class="block text-xs font-bold uppercase tracking-wide text-black/60">Full Name</label>
+            <div class="relative mt-1.5">
+                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-black/40">
+                    <x-heroicon-o-user class="h-5 w-5" />
+                </span>
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value="{{ old('name') }}"
+                    required
+                    autofocus
+                    class="block w-full rounded-md border-0 bg-light-gray py-2.5 pl-10 pr-3 text-sm text-black placeholder:text-black/40 focus:ring-2 focus:ring-navy/40"
+                    placeholder="Juan Dela Cruz"
+                >
+            </div>
+            @error('name')
+                <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+            @enderror
+        </div>
 
         <div>
             <label for="email" class="block text-xs font-bold uppercase tracking-wide text-black/60">Email Address</label>
@@ -39,9 +62,8 @@
                     name="email"
                     value="{{ old('email') }}"
                     required
-                    autofocus
                     class="block w-full rounded-md border-0 bg-light-gray py-2.5 pl-10 pr-3 text-sm text-black placeholder:text-black/40 focus:ring-2 focus:ring-navy/40"
-                    placeholder="you@normi.edu.ph"
+                    placeholder="intern@normi.edu.ph"
                 >
             </div>
             @error('email')
@@ -78,17 +100,21 @@
             @enderror
         </div>
 
-        <div class="flex items-center justify-between">
-            <div class="flex items-center">
+        <div>
+            <label for="password_confirmation" class="block text-xs font-bold uppercase tracking-wide text-black/60">Confirm Password</label>
+            <div class="relative mt-1.5">
+                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-black/40">
+                    <x-heroicon-o-lock-closed class="h-5 w-5" />
+                </span>
                 <input
-                    type="checkbox"
-                    id="remember"
-                    name="remember"
-                    class="rounded border-light-gray text-navy shadow-sm focus:ring-navy/40"
+                    type="password"
+                    id="password_confirmation"
+                    name="password_confirmation"
+                    required
+                    class="block w-full rounded-md border-0 bg-light-gray py-2.5 pl-10 pr-3 text-sm text-black placeholder:text-black/40 focus:ring-2 focus:ring-navy/40"
+                    placeholder="••••••••"
                 >
-                <label for="remember" class="ml-2 text-sm text-black/60">Remember Me</label>
             </div>
-            <a href="#" class="text-xs font-medium text-navy hover:underline">Forgot Password?</a>
         </div>
 
         <button
@@ -100,16 +126,13 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Z"></path>
             </svg>
-            <span x-show="!submitting">Log In</span>
-            <span x-show="submitting" x-cloak>Authenticating...</span>
+            <span x-show="!submitting">Sign Up</span>
+            <span x-show="submitting" x-cloak>Creating Account...</span>
         </button>
 
         <p class="text-center text-xs text-black/40">
-            Your dashboard will be automatically assigned based on your registered account.
-        </p>
-
-        <p class="text-center text-sm text-black/60">
-            Student Intern? <a href="{{ route('register') }}" class="font-medium text-navy hover:underline">Sign Up</a>
+            Already have an account?
+            <a href="{{ route('login') }}" class="font-medium text-navy hover:underline">Sign In</a>
         </p>
     </form>
 @endsection

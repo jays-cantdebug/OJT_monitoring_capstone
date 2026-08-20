@@ -30,33 +30,6 @@
                 <p class="font-bold text-navy">{{ auth()->user()->name }}</p>
                 <span class="mt-2 inline-block rounded-full bg-gold/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-gold">Dean</span>
             </div>
-
-            <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-5">
-                <h3 class="text-xs font-bold uppercase tracking-wide text-black/40 mb-3">School Authority Details</h3>
-                <ul class="space-y-3 text-sm">
-                    <li class="flex items-start gap-3">
-                        <x-heroicon-o-identification class="h-5 w-5 shrink-0 text-black/40" />
-                        <div>
-                            <p class="text-black/40 text-xs">Department</p>
-                            <p class="font-medium text-black">School of Computing</p>
-                        </div>
-                    </li>
-                    <li class="flex items-start gap-3">
-                        <x-heroicon-o-globe-alt class="h-5 w-5 shrink-0 text-black/40" />
-                        <div>
-                            <p class="text-black/40 text-xs">Institutional Domain</p>
-                            <p class="font-medium text-black">normi.edu</p>
-                        </div>
-                    </li>
-                    <li class="flex items-start gap-3">
-                        <x-heroicon-o-check-circle class="h-5 w-5 shrink-0 text-black/40" />
-                        <div>
-                            <p class="text-black/40 text-xs">Access Authority</p>
-                            <p class="font-medium text-black">Authorized Session User</p>
-                        </div>
-                    </li>
-                </ul>
-            </div>
         </div>
 
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-5">

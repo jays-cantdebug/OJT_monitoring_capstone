@@ -15,6 +15,13 @@ class StudentProfile extends Model
         'supervisor_contact',
         'start_date',
         'end_date',
+        'personal_email',
+        'address',
+        'parent_name',
+        'parent_contact',
+        'guardian_name',
+        'guardian_contact',
+        'is_verified',
     ];
 
     protected function casts(): array
@@ -22,6 +29,7 @@ class StudentProfile extends Model
         return [
             'start_date' => 'date',
             'end_date' => 'date',
+            'is_verified' => 'boolean',
         ];
     }
 

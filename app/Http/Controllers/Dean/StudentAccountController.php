@@ -53,7 +53,11 @@ class StudentAccountController extends Controller
 
     private function students()
     {
+        // Self-registered accounts stay off this list until approved (see
+        // PendingApprovalController) - this list means "real active
+        // interns," not "every account that exists."
         return User::where('role', 'student_intern')
+            ->where('status', 'approved')
             ->with('studentProfile')
             ->orderBy('name')
             ->get()

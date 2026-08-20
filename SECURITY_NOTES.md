@@ -2,6 +2,23 @@
 
 Decisions here are kept separate from README.md so they stay traceable on their own — useful for citing during thesis defense if a security choice is questioned.
 
+## REVERSAL (2026-08-20) — Self-Registration Restored, Per Adviser-Approved Paper Scope Change
+
+**Status:** Implemented. Supersedes the 2026-08-09 correction entry below — that entry is kept, not deleted, for audit-trail purposes.
+
+**What changed:** the capstone Adviser reviewed the system and directed that student self-registration ("Sign Up") be brought back alongside Dean-created accounts, rather than Dean-only provisioning. [USER] confirmed this is a genuine Adviser-approved reversal of the paper's scope, not a re-litigation of the earlier 2026-08-09 correction being wrong a second time — the thesis document itself is being updated separately by the student to reflect this.
+
+**What was built:**
+- `POST /register` creates a `student_intern` account with `status = 'pending'`.
+- Dean-created accounts (`Dean\StudentAccountController::store`) are **unaffected and unchanged** — the new `users.status` column defaults to `'approved'` at the schema level, so that controller needed zero code changes to keep provisioning active-immediately accounts.
+- A pending account cannot log in to any role-gated area: `AuthController::authenticate()` redirects pending users to a "Pending Approval" screen instead of a dashboard, and a new `approved` middleware (`App\Http\Middleware\EnsureUserIsApproved`) blocks direct access to `student.*`/`dean.*` routes as defense in depth for any session that predates a later rejection.
+- A rejected account cannot log in at all (`authenticate()` blocks and logs out immediately) and is force-logged-out if a live session becomes rejected mid-session.
+- Dean approve/reject flow: `dean.pending-approvals` (list, approve, reject), reusing the existing `x-confirm-modal` component — no native `confirm()`, consistent with this project's earlier design lesson.
+- Pending self-registered accounts are **excluded** from the main "Student Interns" list (`StudentAccountController::index`) and from the `assignedCount`/"Total Interns" dashboard stat (`StudentMetrics::assignedCount`) until approved — both are scoped to `status = 'approved'` so they continue to mean "real active interns," not "every account that exists." They're only visible via the Pending Approvals page.
+- The CRLF-injection mitigation (`NoCrlfCharacters`, see the CVE entry below) is carried over onto the restored `RegisterRequest`'s email field, exactly as flagged as a must-not-drop item in the original correction entry.
+
+**Why flagged this way, not silently re-applied:** same discipline as the original correction — a reversal of a paper-derived architectural decision is exactly the kind of drift this project's working agreement requires flagging the moment it happens, even when (as here) it's a legitimate, explicitly-authorized scope change rather than a mistake.
+
 ## CORRECTION (2026-08-09) — Self-Registration Was Wrong Against the Paper
 
 **Status:** Caught and confirmed against the paper. Rework in progress, not yet applied to code as of this note.
@@ -41,9 +58,9 @@ This project installs `laravel/framework v11.55.0` — inside the affected `>=11
 
 ## Dean Account Provisioning — Seeded, Not Self-Registered
 
-**Status:** Intentional, by design — not an oversight. Still accurate after the 2026-08-09 correction above; this note only ever described the Dean role.
+**Status:** Intentional, by design — not an oversight. This note only ever described the Dean role, and remains accurate after both the 2026-08-09 correction and the 2026-08-20 reversal above.
 
-There is no Dean self-registration flow and none is planned. The first (and for now, only) Dean account is created directly via `database/seeders/DeanSeeder.php` (`dean@normi.edu.ph`, dev-only placeholder password). **Per the 2026-08-09 correction above, Student Intern accounts now follow the same admin-provisioned pattern** — created by the Dean directly, not via self-registration — so this seeded/provisioned approach turns out to be the norm for both roles, not an exception unique to Dean.
+There is no Dean self-registration flow and none is planned. The first (and for now, only) Dean account is created directly via `database/seeders/DeanSeeder.php` (`dean@normi.edu.ph`, dev-only placeholder password). **As of the 2026-08-20 reversal above, Student Intern accounts follow two coexisting paths** — Dean-created (active immediately, same admin-provisioned pattern as Dean) and self-registered (pending Dean approval) — so Dean provisioning itself is unchanged; only the Student Intern side gained a second path back.
 
 **Action item:** the seeded password is a local-dev placeholder and must be changed before any real deployment or live demo.
 

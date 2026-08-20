@@ -27,6 +27,13 @@
             </div>
         </div>
         <div class="flex shrink-0 items-center gap-4">
+            <a
+                href="{{ route('dean.students.edit', $student) }}"
+                class="inline-flex items-center gap-1.5 rounded-md bg-navy/10 px-3 py-1.5 text-xs font-semibold text-navy hover:bg-navy/20"
+            >
+                <x-heroicon-o-pencil-square class="h-4 w-4" />
+                Edit
+            </a>
             <x-confirm-modal
                 title="Reset password for {{ $student->name }}?"
                 confirm-text="Reset Password"
@@ -53,7 +60,7 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-light-gray">
             <p class="text-xs font-bold uppercase tracking-wide text-black/40">Duty Status</p>
             <p class="mt-1 text-lg font-bold text-navy">
@@ -70,6 +77,16 @@
         <div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-light-gray">
             <p class="text-xs font-bold uppercase tracking-wide text-black/40">Reports Submitted</p>
             <p class="mt-1 text-2xl font-bold text-navy">{{ $reportsSubmitted }}</p>
+        </div>
+        <div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-light-gray">
+            <p class="text-xs font-bold uppercase tracking-wide text-black/40">Verification</p>
+            <p class="mt-1 text-lg font-bold text-navy">
+                <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold {{ $profile->is_verified ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning' }}">
+                    <span class="h-1.5 w-1.5 rounded-full {{ $profile->is_verified ? 'bg-success' : 'bg-warning' }}"></span>
+                    {{ $profile->is_verified ? 'Verified' : 'Unverified' }}
+                </span>
+            </p>
+            <p class="mt-1 text-xs text-black/40">Updated {{ $profile->updated_at?->format('M j, Y') ?? 'never' }}</p>
         </div>
     </div>
 
@@ -102,5 +119,69 @@
                 <p class="mt-1 text-black">{{ optional($profile->end_date)->format('M j, Y') ?: 'Not yet provided' }}</p>
             </div>
         </div>
+    </div>
+
+    <div class="mt-4 bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-6">
+        <h3 class="text-sm font-semibold text-navy mb-4">Personal &amp; Guardian Information</h3>
+        <p class="mb-4 text-xs text-black/40">Filled in by the student &mdash; read-only here.</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-wide text-black/40">Personal Email</p>
+                <p class="mt-1 text-black">{{ $profile->personal_email ?: 'Not yet provided' }}</p>
+            </div>
+            <div>
+                <p class="text-xs font-bold uppercase tracking-wide text-black/40">Contact Number</p>
+                <p class="mt-1 text-black">{{ $student->phone ?: 'Not yet provided' }}</p>
+            </div>
+            <div class="sm:col-span-2">
+                <p class="text-xs font-bold uppercase tracking-wide text-black/40">Home Address</p>
+                <p class="mt-1 text-black">{{ $profile->address ?: 'Not yet provided' }}</p>
+            </div>
+            <div>
+                <p class="text-xs font-bold uppercase tracking-wide text-black/40">Parent's Name</p>
+                <p class="mt-1 text-black">{{ $profile->parent_name ?: 'Not yet provided' }}</p>
+            </div>
+            <div>
+                <p class="text-xs font-bold uppercase tracking-wide text-black/40">Parent's Contact</p>
+                <p class="mt-1 text-black">{{ $profile->parent_contact ?: 'Not yet provided' }}</p>
+            </div>
+            <div>
+                <p class="text-xs font-bold uppercase tracking-wide text-black/40">Guardian's Name</p>
+                <p class="mt-1 text-black">{{ $profile->guardian_name ?: 'Not yet provided' }}</p>
+            </div>
+            <div>
+                <p class="text-xs font-bold uppercase tracking-wide text-black/40">Guardian's Contact</p>
+                <p class="mt-1 text-black">{{ $profile->guardian_contact ?: 'Not yet provided' }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-6">
+        <h3 class="text-sm font-semibold text-navy mb-4">Edit History</h3>
+        @if ($auditLogs->isEmpty())
+            <p class="text-sm text-black/60">No edits recorded yet.</p>
+        @else
+            <ul class="divide-y divide-light-gray">
+                @foreach ($auditLogs as $log)
+                    <li class="py-3">
+                        <p class="text-sm text-black">
+                            <span class="font-medium">{{ $log->actor->name }}</span>
+                            updated this record
+                        </p>
+                        <ul class="mt-1 space-y-0.5 text-xs text-black/60">
+                            @foreach ($log->changes as $field => $change)
+                                <li>
+                                    <span class="font-medium">{{ str($field)->replace('_', ' ')->title() }}:</span>
+                                    "{{ is_bool($change['from']) ? ($change['from'] ? 'Verified' : 'Unverified') : $change['from'] }}"
+                                    &rarr;
+                                    "{{ is_bool($change['to']) ? ($change['to'] ? 'Verified' : 'Unverified') : $change['to'] }}"
+                                </li>
+                            @endforeach
+                        </ul>
+                        <p class="mt-1 text-xs text-black/40">{{ $log->created_at->format('M j, Y g:i A') }}</p>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
     </div>
 @endsection

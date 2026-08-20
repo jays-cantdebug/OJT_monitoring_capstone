@@ -48,7 +48,9 @@ class AccomplishmentReportController extends Controller
         abort_unless($hasCompletedDtrEntryToday, 422, 'Complete your Time In and Time Out for today before submitting a report.');
 
         $validated = $request->validate([
-            'description' => ['required', 'string', 'max:5000'],
+            'activities_performed' => ['required', 'string', 'max:5000'],
+            'problems_encountered' => ['required', 'string', 'max:5000'],
+            'learnings_acquired' => ['required', 'string', 'max:5000'],
             'photo' => ['required', 'image', 'max:5120'],
         ]);
 
@@ -57,7 +59,9 @@ class AccomplishmentReportController extends Controller
         $report = AccomplishmentReport::create([
             'user_id' => $user->id,
             'report_date' => today(),
-            'description' => $validated['description'],
+            'activities_performed' => $validated['activities_performed'],
+            'problems_encountered' => $validated['problems_encountered'],
+            'learnings_acquired' => $validated['learnings_acquired'],
             'photo_path' => $photoPath,
         ]);
 

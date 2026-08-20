@@ -48,6 +48,24 @@
         </div>
     </div>
 
+    <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-6 mb-6">
+        <h2 class="text-sm font-semibold text-navy mb-4">Quick Actions</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <a href="{{ route('student.attendance') }}" class="flex items-center gap-3 rounded-lg bg-success/5 px-4 py-3 hover:bg-success/10">
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-success/10 text-success">
+                    <x-heroicon-o-calendar class="h-5 w-5" />
+                </div>
+                <span class="text-sm font-medium text-black">Attendance</span>
+            </a>
+            <a href="{{ route('student.reports') }}" class="flex items-center gap-3 rounded-lg bg-gold/5 px-4 py-3 hover:bg-gold/10">
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold/10 text-gold">
+                    <x-heroicon-o-document-text class="h-5 w-5" />
+                </div>
+                <span class="text-sm font-medium text-black">Daily Report</span>
+            </a>
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-6">
             <h2 class="text-sm font-semibold text-navy mb-3">Recent Attendance</h2>

@@ -12,6 +12,7 @@ class PendingApprovalController extends Controller
     {
         $pendingStudents = User::where('role', 'student_intern')
             ->where('status', 'pending')
+            ->where('department', auth()->user()->department)
             ->orderBy('created_at')
             ->get();
 
@@ -20,7 +21,7 @@ class PendingApprovalController extends Controller
 
     public function approve(User $user): RedirectResponse
     {
-        abort_unless($user->isStudentIntern() && $user->isPending(), 404);
+        abort_unless($user->isStudentIntern() && $user->isPending() && $user->department === auth()->user()->department, 404);
 
         $user->update(['status' => 'approved']);
 
@@ -30,7 +31,7 @@ class PendingApprovalController extends Controller
 
     public function reject(User $user): RedirectResponse
     {
-        abort_unless($user->isStudentIntern() && $user->isPending(), 404);
+        abort_unless($user->isStudentIntern() && $user->isPending() && $user->department === auth()->user()->department, 404);
 
         $user->update(['status' => 'rejected']);
 

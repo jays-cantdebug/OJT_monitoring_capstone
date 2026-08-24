@@ -2,6 +2,23 @@
 
 Decisions here are kept separate from README.md so they stay traceable on their own — useful for citing during thesis defense if a security choice is questioned.
 
+## REVERSAL (2026-08-24) — True Admin Role Introduced, Per Adviser/Client-Approved Paper Scope Change
+
+**Status:** Implemented.
+
+**What changed:** the paper's original scope stated only two roles exist: Student Intern and Dean (see the "Two roles only" product decision this project was built against). [USER] confirmed this is a deliberate, Client-approved expansion of that scope — a genuine third role, "Admin," distinct from Dean rather than a flag or permission tier on top of it — not a re-litigation of the two-role decision being wrong. The thesis document is being updated separately to reflect this.
+
+**Why a role split was needed at all:** the Dean-creates-Dean feature (built the prior session, department-scoped accounts) let *any* Dean provision another Dean account for *any* department — a cross-department privilege that had no business living on a role whose entire other purpose (`dean.*` routes) is scoped to managing one department's own Student Interns. Splitting it out onto a dedicated Admin role, rather than adding an `is_super_dean` flag, keeps the department-scoping invariant on `dean.*` routes airtight: every Dean-facing controller can keep assuming "this user has exactly one department, and it's the only one they can touch," with zero special-cased exceptions for a "some Deans can see every department" case.
+
+**What was built:**
+- `users.role` MySQL `ENUM` extended from `('student_intern','dean')` to `('student_intern','dean','admin')` via `2026_08_24_140712_add_admin_to_users_role_enum.php` (raw `ALTER TABLE ... MODIFY` on MySQL — no `doctrine/dbal` installed, matching this project's existing raw-SQL precedent for enum changes; the SQLite test DB path drops/re-adds the column instead, since SQLite represents `enum()` as a CHECK constraint with no `ALTER ... MODIFY` equivalent).
+- `App\Models\User::isAdmin()` added alongside the existing `isDean()`/`isStudentIntern()` — Admin is neither of those.
+- Dean-account provisioning (`Admin\DeanAccountController`, `dean.deans*` routes and views) moved wholesale from the `dean.` route group to a new `admin.` route group, gated by `role:admin` — a regular Dean hitting `/admin/deans` now gets a `403`, and the "Deans" sidebar nav item was removed from the Dean layout entirely (server-side enforcement via middleware, not just a hidden link).
+- Regular Deans are otherwise **fully unaffected**: creating/managing their own department's Student Interns, Attendance, Reports, Live Map — all `dean.*` routes and their department-scoping — is untouched.
+- New `database/seeders/AdminSeeder.php` seeds a dedicated `admin@normi.edu.ph` (dev-only placeholder password, same pattern as `DeanSeeder.php`) — **not** a promotion of the existing `dean@normi.edu.ph`, which stays exactly as it was (a regular IT-department Dean). Reusing an account whose email/identity says "Dean" for the Admin role was judged more confusing than seeding a fresh one, and promoting it would have left the IT department with zero Dean coverage until a new one was created through the Admin panel.
+
+**Why flagged this way, not silently applied:** same discipline as the 2026-08-20 entry above — a scope change beyond what the paper originally specified gets flagged the moment it happens, even when it's a legitimate, explicitly-authorized expansion rather than a mistake.
+
 ## REVERSAL (2026-08-20) — Self-Registration Restored, Per Adviser-Approved Paper Scope Change
 
 **Status:** Implemented. Supersedes the 2026-08-09 correction entry below — that entry is kept, not deleted, for audit-trail purposes.
@@ -58,11 +75,11 @@ This project installs `laravel/framework v11.55.0` — inside the affected `>=11
 
 ## Dean Account Provisioning — Seeded, Not Self-Registered
 
-**Status:** Intentional, by design — not an oversight. This note only ever described the Dean role, and remains accurate after both the 2026-08-09 correction and the 2026-08-20 reversal above.
+**Status:** Intentional, by design — not an oversight. This note originally described the Dean role only; **superseded in part by the 2026-08-24 entry above** — Dean-account creation is now an Admin-only capability, not something every Dean can do, but the "no public self-registration for Dean/Admin accounts" principle this note describes remains accurate.
 
-There is no Dean self-registration flow and none is planned. The first (and for now, only) Dean account is created directly via `database/seeders/DeanSeeder.php` (`dean@normi.edu.ph`, dev-only placeholder password). **As of the 2026-08-20 reversal above, Student Intern accounts follow two coexisting paths** — Dean-created (active immediately, same admin-provisioned pattern as Dean) and self-registered (pending Dean approval) — so Dean provisioning itself is unchanged; only the Student Intern side gained a second path back.
+There is no Dean or Admin self-registration flow and none is planned. The first Dean and Admin accounts are seeded directly (`database/seeders/DeanSeeder.php` → `dean@normi.edu.ph`; `database/seeders/AdminSeeder.php` → `admin@normi.edu.ph`; both dev-only placeholder passwords). From there, the seeded Admin provisions further Dean accounts for other departments through the Admin panel (`Admin\DeanAccountController`) — see the 2026-08-24 entry above. **As of the 2026-08-20 reversal above, Student Intern accounts follow two coexisting paths** — Dean-created (active immediately, same admin-provisioned pattern) and self-registered (pending Dean approval) — Student Intern provisioning itself is unaffected by the 2026-08-24 change.
 
-**Action item:** the seeded password is a local-dev placeholder and must be changed before any real deployment or live demo.
+**Action item:** both seeded passwords are local-dev placeholders and must be changed before any real deployment or live demo.
 
 ## Live Map — Leaflet.js + OpenStreetMap Instead of Google Maps
 

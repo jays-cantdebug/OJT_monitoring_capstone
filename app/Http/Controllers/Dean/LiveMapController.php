@@ -9,7 +9,10 @@ class LiveMapController extends Controller
 {
     public function index()
     {
+        $department = auth()->user()->department;
+
         $onDuty = User::where('role', 'student_intern')
+            ->where('department', $department)
             ->whereHas('dtrEntries', fn ($query) => $query->whereNull('time_out'))
             ->get()
             ->map(function (User $student) {
@@ -33,6 +36,6 @@ class LiveMapController extends Controller
                 ];
             });
 
-        return view('dean.live-map', compact('onDuty'));
+        return view('dean.live-map', compact('onDuty', 'department'));
     }
 }

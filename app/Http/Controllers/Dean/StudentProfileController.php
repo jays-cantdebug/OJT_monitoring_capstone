@@ -16,14 +16,14 @@ class StudentProfileController extends Controller
 {
     public function show(User $student): View
     {
-        abort_unless($student->isStudentIntern(), 404);
+        abort_unless($this->isManageable($student), 404);
 
         return $this->showView($student);
     }
 
     public function edit(User $student): View
     {
-        abort_unless($student->isStudentIntern(), 404);
+        abort_unless($this->isManageable($student), 404);
 
         $profile = $student->studentProfile ?? new StudentProfile;
 
@@ -35,7 +35,7 @@ class StudentProfileController extends Controller
 
     public function update(UpdateStudentRequest $request, User $student): RedirectResponse
     {
-        abort_unless($student->isStudentIntern(), 404);
+        abort_unless($this->isManageable($student), 404);
 
         $validated = $request->validated();
         $profile = $student->studentProfile ?? new StudentProfile(['user_id' => $student->id]);
@@ -72,7 +72,7 @@ class StudentProfileController extends Controller
 
     public function resetPassword(User $student): View
     {
-        abort_unless($student->isStudentIntern(), 404);
+        abort_unless($this->isManageable($student), 404);
 
         $password = Str::password(12);
 
@@ -85,6 +85,17 @@ class StudentProfileController extends Controller
             'email' => $student->email,
             'password' => $password,
         ]);
+    }
+
+    /**
+     * A student is only manageable by a Dean if they're a Student Intern in
+     * that Dean's own department - blocks a Dean from viewing/editing
+     * another department's student by guessing/typing the URL directly,
+     * not just filtering them out of the list view.
+     */
+    private function isManageable(User $student): bool
+    {
+        return $student->isStudentIntern() && $student->department === auth()->user()->department;
     }
 
     private function showView(User $student, ?array $resetPassword = null): View

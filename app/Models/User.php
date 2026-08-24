@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\Department;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -27,6 +29,7 @@ class User extends Authenticatable
         'password',
         'role',
         'status',
+        'department',
     ];
 
     /**
@@ -49,7 +52,18 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'department' => Department::class,
         ];
+    }
+
+    public function scopeStudentInterns(Builder $query): void
+    {
+        $query->where('role', 'student_intern');
+    }
+
+    public function scopeInDepartment(Builder $query, Department $department): void
+    {
+        $query->where('department', $department);
     }
 
     public function isDean(): bool
@@ -60,6 +74,24 @@ class User extends Authenticatable
     public function isStudentIntern(): bool
     {
         return $this->role === 'student_intern';
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * The route each role lands on after login / when hitting '/' - Admin
+     * has no dashboard, so its Deans list doubles as its home page.
+     */
+    public function homeRouteName(): string
+    {
+        return match (true) {
+            $this->isAdmin() => 'admin.deans',
+            $this->isDean() => 'dean.dashboard',
+            default => 'student.dashboard',
+        };
     }
 
     public function isApproved(): bool

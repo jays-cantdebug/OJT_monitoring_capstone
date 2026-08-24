@@ -17,6 +17,7 @@ class SelfRegistrationTest extends TestCase
             'email' => 'juan@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
+            'department' => 'IT',
         ]);
 
         $response->assertRedirect(route('pending-approval'));

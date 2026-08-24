@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Department;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -30,7 +31,23 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
             'role' => 'student_intern',
+            // Fixed default (not random) so a factory-created Dean and a
+            // factory-created Student land in the same department unless a
+            // test explicitly overrides it - keeps every pre-existing test
+            // that pairs a Dean with students working under department
+            // scoping without needing changes.
+            'department' => Department::IT,
         ];
+    }
+
+    /**
+     * Indicate that the user belongs to a specific department.
+     */
+    public function department(Department $department): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'department' => $department,
+        ]);
     }
 
     /**
@@ -50,6 +67,18 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => 'dean',
+        ]);
+    }
+
+    /**
+     * Indicate that the user is an Admin - no department, distinct from
+     * Dean and Student Intern.
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'admin',
+            'department' => null,
         ]);
     }
 

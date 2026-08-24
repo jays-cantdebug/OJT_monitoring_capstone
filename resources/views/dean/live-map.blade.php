@@ -18,7 +18,7 @@
         </div>
     </div>
 
-    <div x-data="liveMap({{ $onDuty->values()->toJson() }})">
+    <div x-data="liveMap({{ $onDuty->values()->toJson() }}, '{{ $department->value }}')">
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-4 mb-6 flex flex-wrap items-center gap-3">
             <div class="relative flex-1 min-w-[200px]">
                 <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-black/40">

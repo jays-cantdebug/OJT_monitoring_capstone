@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Enums\Department;
 use App\Models\AccomplishmentReport;
 use App\Models\DtrEntry;
 use App\Models\User;
@@ -10,35 +11,37 @@ use Illuminate\Support\Collection;
 /**
  * Aggregate queries over all student_intern users, shared by the Dean
  * Dashboard and Attendance Records pages so the same numbers mean the
- * same thing everywhere they're shown.
+ * same thing everywhere they're shown. Every method takes the calling
+ * Dean's department explicitly (rather than reading auth() internally)
+ * to keep this testable and scoped to "students in my department only."
  */
 class StudentMetrics
 {
-    public static function assignedCount(): int
+    public static function assignedCount(Department $department): int
     {
         // Excludes pending/rejected self-registered accounts - matches
         // StudentAccountController's Student Interns list, which is scoped
         // to approved accounts only.
-        return User::where('role', 'student_intern')->where('status', 'approved')->count();
+        return User::where('role', 'student_intern')->where('status', 'approved')->where('department', $department)->count();
     }
 
-    public static function activeCount(): int
+    public static function activeCount(Department $department): int
     {
-        return User::where('role', 'student_intern')->whereHas('dtrEntries')->count();
+        return User::where('role', 'student_intern')->where('department', $department)->whereHas('dtrEntries')->count();
     }
 
-    public static function currentlyOnDutyCount(): int
+    public static function currentlyOnDutyCount(Department $department): int
     {
         return DtrEntry::whereNull('time_out')
-            ->whereHas('user', fn ($query) => $query->where('role', 'student_intern'))
+            ->whereHas('user', fn ($query) => $query->where('role', 'student_intern')->where('department', $department))
             ->distinct('user_id')
             ->count('user_id');
     }
 
-    public static function presentTodayCount(): int
+    public static function presentTodayCount(Department $department): int
     {
         return DtrEntry::whereDate('time_in', today())
-            ->whereHas('user', fn ($query) => $query->where('role', 'student_intern'))
+            ->whereHas('user', fn ($query) => $query->where('role', 'student_intern')->where('department', $department))
             ->distinct('user_id')
             ->count('user_id');
     }
@@ -48,9 +51,10 @@ class StudentMetrics
      * time-in first. Each student carries only their latest entry from
      * today (a student can clock in/out more than once in a day).
      */
-    public static function presentTodayStudents(): Collection
+    public static function presentTodayStudents(Department $department): Collection
     {
         return User::where('role', 'student_intern')
+            ->where('department', $department)
             ->whereHas('dtrEntries', fn ($query) => $query->whereDate('time_in', today()))
             ->with(['studentProfile', 'dtrEntries' => fn ($query) => $query->whereDate('time_in', today())->latest('time_in')->limit(1)])
             ->get()
@@ -66,9 +70,10 @@ class StudentMetrics
      * can't distinguish an actual absence from a student who's already
      * completed their hours or is on approved leave.
      */
-    public static function absentTodayStudents(): Collection
+    public static function absentTodayStudents(Department $department): Collection
     {
         return User::where('role', 'student_intern')
+            ->where('department', $department)
             ->whereDoesntHave('dtrEntries', fn ($query) => $query->whereDate('time_in', today()))
             ->with(['studentProfile', 'dtrEntries' => fn ($query) => $query->latest('time_in')->limit(1)])
             ->get()
@@ -79,31 +84,32 @@ class StudentMetrics
             ->values();
     }
 
-    public static function pendingReportsCount(): int
+    public static function pendingReportsCount(Department $department): int
     {
         return User::where('role', 'student_intern')
+            ->where('department', $department)
             ->whereHas('dtrEntries', fn ($query) => $query->whereDate('time_in', today())->whereNotNull('time_out'))
             ->whereDoesntHave('accomplishmentReports', fn ($query) => $query->whereDate('report_date', today()))
             ->count();
     }
 
-    public static function totalHoursLogged(): int
+    public static function totalHoursLogged(Department $department): int
     {
-        return intdiv(self::completedSeconds(), 3600);
+        return intdiv(self::completedSeconds($department), 3600);
     }
 
-    public static function hoursLoggedToday(): int
+    public static function hoursLoggedToday(Department $department): int
     {
-        return intdiv(self::completedSeconds(fn ($query) => $query->whereDate('time_in', today())), 3600);
+        return intdiv(self::completedSeconds($department, fn ($query) => $query->whereDate('time_in', today())), 3600);
     }
 
     /**
      * Average, across students with at least one eligible day, of
      * (reports submitted / days with a completed DTR entry).
      */
-    public static function avgComplianceRatePercent(): int
+    public static function avgComplianceRatePercent(Department $department): int
     {
-        $students = User::where('role', 'student_intern')->get();
+        $students = User::where('role', 'student_intern')->where('department', $department)->get();
 
         $rates = $students->map(function (User $student) {
             $eligibleDays = $student->dtrEntries()
@@ -135,10 +141,10 @@ class StudentMetrics
      * dedicated activity-log table, so this is derived live from the two
      * event-producing tables that already exist.
      */
-    public static function recentActivity(int $limit = 5): Collection
+    public static function recentActivity(Department $department, int $limit = 5): Collection
     {
         $dtrEvents = DtrEntry::with('user')
-            ->whereHas('user', fn ($query) => $query->where('role', 'student_intern'))
+            ->whereHas('user', fn ($query) => $query->where('role', 'student_intern')->where('department', $department))
             ->orderByDesc('time_in')
             ->limit($limit)
             ->get()
@@ -150,7 +156,7 @@ class StudentMetrics
             ]);
 
         $reportEvents = AccomplishmentReport::with('user')
-            ->whereHas('user', fn ($query) => $query->where('role', 'student_intern'))
+            ->whereHas('user', fn ($query) => $query->where('role', 'student_intern')->where('department', $department))
             ->orderByDesc('created_at')
             ->limit($limit)
             ->get()
@@ -173,10 +179,10 @@ class StudentMetrics
             ->values();
     }
 
-    private static function completedSeconds(?\Closure $scope = null): int
+    private static function completedSeconds(Department $department, ?\Closure $scope = null): int
     {
         $query = DtrEntry::whereNotNull('time_out')
-            ->whereHas('user', fn ($query) => $query->where('role', 'student_intern'));
+            ->whereHas('user', fn ($query) => $query->where('role', 'student_intern')->where('department', $department));
 
         if ($scope) {
             $scope($query);

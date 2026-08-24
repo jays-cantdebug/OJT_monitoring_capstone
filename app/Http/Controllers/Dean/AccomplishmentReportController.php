@@ -9,8 +9,10 @@ class AccomplishmentReportController extends Controller
 {
     public function index()
     {
+        $department = auth()->user()->department;
+
         $reports = AccomplishmentReport::with('user')
-            ->whereHas('user', fn ($query) => $query->where('role', 'student_intern'))
+            ->whereHas('user', fn ($query) => $query->where('role', 'student_intern')->where('department', $department))
             ->orderByDesc('report_date')
             ->get()
             ->map(fn (AccomplishmentReport $report) => [

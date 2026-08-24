@@ -24,6 +24,7 @@ class AuthController extends Controller
             'password' => $request->validated('password'),
             'role' => 'student_intern',
             'status' => 'pending',
+            'department' => $request->validated('department'),
         ]);
 
         Auth::login($user);
@@ -66,7 +67,7 @@ class AuthController extends Controller
             return redirect()->route('pending-approval');
         }
 
-        return redirect()->route($user->isDean() ? 'dean.dashboard' : 'student.dashboard');
+        return redirect()->route($user->homeRouteName());
     }
 
     public function destroy(Request $request)

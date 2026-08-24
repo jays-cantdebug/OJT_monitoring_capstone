@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Dean;
 
+use App\Enums\Department;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dean\CreateStudentAccountRequest;
 use App\Models\User;
@@ -14,7 +15,7 @@ class StudentAccountController extends Controller
     public function index()
     {
         return view('dean.students', [
-            'students' => $this->students(),
+            'students' => $this->students(auth()->user()->department),
         ]);
     }
 
@@ -32,6 +33,7 @@ class StudentAccountController extends Controller
             'email' => $request->validated('email'),
             'password' => $password,
             'role' => 'student_intern',
+            'department' => $request->user()->department,
         ]);
 
         $student->notify(new StudentAccountCreatedNotification);
@@ -42,7 +44,7 @@ class StudentAccountController extends Controller
         // query string (leaks into history/logs). Rendering it straight
         // into this response keeps it server-side and one-shot for real.
         return view('dean.students', [
-            'students' => $this->students(),
+            'students' => $this->students($request->user()->department),
             'created' => [
                 'name' => $student->name,
                 'email' => $student->email,
@@ -51,13 +53,14 @@ class StudentAccountController extends Controller
         ]);
     }
 
-    private function students()
+    private function students(Department $department)
     {
         // Self-registered accounts stay off this list until approved (see
         // PendingApprovalController) - this list means "real active
         // interns," not "every account that exists."
         return User::where('role', 'student_intern')
             ->where('status', 'approved')
+            ->where('department', $department)
             ->with('studentProfile')
             ->orderBy('name')
             ->get()

@@ -21,5 +21,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(DeanSeeder::class);
+        $this->call(AdminSeeder::class);
     }
 }

@@ -23,7 +23,7 @@ class GpsPingBroadcast implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('dean.live-map'),
+            new PrivateChannel('dean.live-map.'.$this->ping->user->department->value),
         ];
     }
 

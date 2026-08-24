@@ -23,18 +23,23 @@ class NotifyMissedReports extends Command
     {
         $yesterday = today()->subDay();
 
-        $deans = User::where('role', 'dean')->get();
-
-        if ($deans->isEmpty()) {
-            return;
-        }
-
         $missedStudents = User::where('role', 'student_intern')
             ->whereHas('dtrEntries', fn ($query) => $query->whereDate('time_in', $yesterday)->whereNotNull('time_out'))
             ->whereDoesntHave('accomplishmentReports', fn ($query) => $query->whereDate('report_date', $yesterday))
             ->get();
 
+        // Notified per missed student's own department, not one flat list
+        // of every Dean for every student - a Dean must never learn about
+        // a missed report from a department they don't manage.
+        $deansByDepartment = User::where('role', 'dean')->get()->groupBy(fn (User $dean) => $dean->department->value);
+
         foreach ($missedStudents as $student) {
+            $deans = $deansByDepartment->get($student->department->value, collect());
+
+            if ($deans->isEmpty()) {
+                continue;
+            }
+
             Notification::send($deans, new MissedReportNotification($student, $yesterday));
         }
 

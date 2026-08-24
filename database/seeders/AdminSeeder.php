@@ -2,12 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Enums\Department;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
-class DeanSeeder extends Seeder
+class AdminSeeder extends Seeder
 {
     /**
      * Seed the application's database.
@@ -15,12 +14,12 @@ class DeanSeeder extends Seeder
     public function run(): void
     {
         User::updateOrCreate(
-            ['email' => 'dean@normi.edu.ph'],
+            ['email' => 'admin@normi.edu.ph'],
             [
-                'name' => 'NORMI Dean',
+                'name' => 'NORMI Admin',
                 'password' => Hash::make('password'),
-                'role' => 'dean',
-                'department' => Department::IT,
+                'role' => 'admin',
+                'department' => null,
                 'email_verified_at' => now(),
             ]
         );

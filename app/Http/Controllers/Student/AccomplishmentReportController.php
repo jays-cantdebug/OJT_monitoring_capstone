@@ -65,7 +65,7 @@ class AccomplishmentReportController extends Controller
             'photo_path' => $photoPath,
         ]);
 
-        $deans = User::where('role', 'dean')->get();
+        $deans = User::where('role', 'dean')->where('department', $user->department)->get();
         Notification::send($deans, new ReportSubmittedNotification($report));
 
         return redirect()->route('student.reports')->with('status', 'Your report was submitted.');

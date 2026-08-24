@@ -14,7 +14,7 @@ class ReportExportController extends Controller
 {
     public function index(ExportAttendanceReportRequest $request)
     {
-        $students = User::where('role', 'student_intern')->orderBy('name')->get(['id', 'name']);
+        $students = User::where('role', 'student_intern')->where('department', $request->user()->department)->orderBy('name')->get(['id', 'name']);
 
         return view('dean.reports-export', [
             'students' => $students,
@@ -69,9 +69,10 @@ class ReportExportController extends Controller
     private function buildReport(ExportAttendanceReportRequest $request): array
     {
         $validated = $request->validated();
+        $department = $request->user()->department;
 
         $entries = DtrEntry::with('user')
-            ->whereHas('user', fn ($query) => $query->where('role', 'student_intern'))
+            ->whereHas('user', fn ($query) => $query->where('role', 'student_intern')->where('department', $department))
             ->when($validated['student_id'] ?? null, fn ($query, $studentId) => $query->where('user_id', $studentId))
             ->when($validated['date_from'] ?? null, fn ($query, $date) => $query->whereDate('time_in', '>=', $date))
             ->when($validated['date_to'] ?? null, fn ($query, $date) => $query->whereDate('time_in', '<=', $date))
@@ -83,7 +84,7 @@ class ReportExportController extends Controller
             ->sum(fn (DtrEntry $entry) => $entry->durationInSeconds());
 
         $studentName = ($validated['student_id'] ?? null)
-            ? User::find($validated['student_id'])?->name
+            ? User::where('id', $validated['student_id'])->where('department', $department)->first()?->name
             : null;
 
         $filterLabel = collect([

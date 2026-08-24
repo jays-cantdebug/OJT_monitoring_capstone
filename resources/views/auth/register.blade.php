@@ -101,6 +101,24 @@
         </div>
 
         <div>
+            <label for="department" class="block text-xs font-bold uppercase tracking-wide text-black/60">Department</label>
+            <select
+                id="department"
+                name="department"
+                required
+                class="mt-1.5 block w-full rounded-md border-0 bg-light-gray py-2.5 px-3 text-sm text-black focus:ring-2 focus:ring-navy/40"
+            >
+                <option value="" disabled {{ old('department') ? '' : 'selected' }}>Select a department</option>
+                @foreach (App\Enums\Department::cases() as $department)
+                    <option value="{{ $department->value }}" @selected(old('department') === $department->value)>{{ $department->value }}</option>
+                @endforeach
+            </select>
+            @error('department')
+                <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div>
             <label for="password_confirmation" class="block text-xs font-bold uppercase tracking-wide text-black/60">Confirm Password</label>
             <div class="relative mt-1.5">
                 <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-black/40">

@@ -218,7 +218,7 @@ function eventMarkerIcon(L, label, colorClass) {
     });
 }
 
-Alpine.data('liveMap', (initialOnDuty) => {
+Alpine.data('liveMap', (initialOnDuty, department) => {
     // Leaflet's map/marker instances are kept out of Alpine's reactive
     // proxy (plain closure variables, not `this` properties) - wrapping
     // them in Alpine's reactivity is a known source of breakage.
@@ -390,7 +390,7 @@ Alpine.data('liveMap', (initialOnDuty) => {
             });
 
             initEcho()
-                .private('dean.live-map')
+                .private(`dean.live-map.${department}`)
                 .listen('.ping.created', (event) => {
                     const existing = this.students.find((student) => student.userId === event.user_id);
 

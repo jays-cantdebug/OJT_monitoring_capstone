@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\DeanAccountController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Dean\AccomplishmentReportController as DeanAccomplishmentReportController;
 use App\Http\Controllers\Dean\AttendanceController;
@@ -29,7 +30,7 @@ Route::get('/', function () {
             return redirect()->route('pending-approval');
         }
 
-        return redirect()->route($user->isDean() ? 'dean.dashboard' : 'student.dashboard');
+        return redirect()->route($user->homeRouteName());
     }
 
     return redirect()->route('login');
@@ -93,6 +94,7 @@ Route::prefix('dean')->name('dean.')->middleware(['auth', 'approved', 'role:dean
     Route::get('/students', [StudentAccountController::class, 'index'])->name('students');
     Route::get('/students/create', [StudentAccountController::class, 'create'])->name('students.create');
     Route::post('/students', [StudentAccountController::class, 'store'])->name('students.store');
+
     Route::get('/students/{student}', [StudentProfileController::class, 'show'])->name('students.show');
     Route::get('/students/{student}/edit', [StudentProfileController::class, 'edit'])->name('students.edit');
     Route::put('/students/{student}', [StudentProfileController::class, 'update'])->name('students.update');
@@ -111,6 +113,18 @@ Route::prefix('dean')->name('dean.')->middleware(['auth', 'approved', 'role:dean
 
     Route::get('/profile', function () {
         return view('dean.profile');
+    })->name('profile');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+});
+
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'approved', 'role:admin'])->group(function () {
+    Route::get('/deans', [DeanAccountController::class, 'index'])->name('deans');
+    Route::get('/deans/create', [DeanAccountController::class, 'create'])->name('deans.create');
+    Route::post('/deans', [DeanAccountController::class, 'store'])->name('deans.store');
+
+    Route::get('/profile', function () {
+        return view('admin.profile');
     })->name('profile');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');

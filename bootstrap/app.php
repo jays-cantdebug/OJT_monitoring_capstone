@@ -26,7 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return route('pending-approval');
             }
 
-            return route($user->isDean() ? 'dean.dashboard' : 'student.dashboard');
+            return route($user->homeRouteName());
         });
     })
     ->withExceptions(function (Exceptions $exceptions) {

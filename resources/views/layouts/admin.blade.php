@@ -42,7 +42,9 @@
             <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
                 @php
                     $navItems = [
+                        'admin.dashboard' => ['label' => 'Dashboard', 'icon' => 'home'],
                         'admin.deans' => ['label' => 'Deans', 'icon' => 'identification'],
+                        'admin.audit-logs' => ['label' => 'Audit Logs', 'icon' => 'clipboard-document-list'],
                         'admin.profile' => ['label' => 'Profile', 'icon' => 'user-circle'],
                     ];
                 @endphp

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Dean;
 
+use App\Enums\AuditAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dean\UpdateStudentRequest;
 use App\Models\AuditLog;
@@ -59,12 +60,7 @@ class StudentProfileController extends Controller
         );
 
         if ($changes !== []) {
-            AuditLog::create([
-                'actor_id' => $request->user()->id,
-                'subject_id' => $student->id,
-                'action' => 'updated_profile',
-                'changes' => $changes,
-            ]);
+            AuditLog::record($request->user(), $student, AuditAction::UpdatedProfile, $changes);
         }
 
         return redirect()->route('dean.students.show', $student)->with('status', "{$student->name}'s record was updated.");
@@ -77,6 +73,8 @@ class StudentProfileController extends Controller
         $password = Str::password(12);
 
         $student->update(['password' => $password]);
+
+        AuditLog::record(auth()->user(), $student, AuditAction::ResetStudentPassword);
 
         // Rendered directly rather than flashed through a redirect: a
         // one-time credential like this must never round-trip through a

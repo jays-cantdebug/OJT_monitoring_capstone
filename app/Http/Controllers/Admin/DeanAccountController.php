@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\AuditAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CreateDeanAccountRequest;
+use App\Models\AuditLog;
 use App\Models\User;
 use App\Notifications\DeanAccountCreatedNotification;
 use Illuminate\Support\Str;
@@ -36,6 +38,10 @@ class DeanAccountController extends Controller
         ]);
 
         $dean->notify(new DeanAccountCreatedNotification);
+
+        AuditLog::record($request->user(), $dean, AuditAction::CreatedDeanAccount, [
+            'department' => ['from' => null, 'to' => $dean->department->value],
+        ]);
 
         // Rendered directly rather than flashed through a redirect - see
         // StudentAccountController::store() for why a one-time credential

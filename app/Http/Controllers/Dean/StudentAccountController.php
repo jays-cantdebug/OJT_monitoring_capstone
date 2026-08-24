@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Dean;
 
+use App\Enums\AuditAction;
 use App\Enums\Department;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dean\CreateStudentAccountRequest;
+use App\Models\AuditLog;
 use App\Models\User;
 use App\Notifications\StudentAccountCreatedNotification;
 use Illuminate\Support\Str;
@@ -37,6 +39,10 @@ class StudentAccountController extends Controller
         ]);
 
         $student->notify(new StudentAccountCreatedNotification);
+
+        AuditLog::record($request->user(), $student, AuditAction::CreatedStudentAccount, [
+            'department' => ['from' => null, 'to' => $student->department->value],
+        ]);
 
         // Rendered directly rather than flashed through a redirect: a
         // one-time credential like this must never round-trip through a

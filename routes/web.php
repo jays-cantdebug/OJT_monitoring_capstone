@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DeanAccountController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Dean\AccomplishmentReportController as DeanAccomplishmentReportController;
@@ -119,9 +121,13 @@ Route::prefix('dean')->name('dean.')->middleware(['auth', 'approved', 'role:dean
 });
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'approved', 'role:admin'])->group(function () {
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
     Route::get('/deans', [DeanAccountController::class, 'index'])->name('deans');
     Route::get('/deans/create', [DeanAccountController::class, 'create'])->name('deans.create');
     Route::post('/deans', [DeanAccountController::class, 'store'])->name('deans.store');
+
+    Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs');
 
     Route::get('/profile', function () {
         return view('admin.profile');

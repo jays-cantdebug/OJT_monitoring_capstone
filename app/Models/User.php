@@ -88,7 +88,7 @@ class User extends Authenticatable
     public function homeRouteName(): string
     {
         return match (true) {
-            $this->isAdmin() => 'admin.deans',
+            $this->isAdmin() => 'admin.dashboard',
             $this->isDean() => 'dean.dashboard',
             default => 'student.dashboard',
         };

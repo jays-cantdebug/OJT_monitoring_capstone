@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\AuditAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,6 +27,11 @@ class AuthController extends Controller
             'role' => 'student_intern',
             'status' => 'pending',
             'department' => $request->validated('department'),
+        ]);
+
+        AuditLog::record($user, $user, AuditAction::SelfRegisteredAccount, [
+            'department' => ['from' => null, 'to' => $user->department->value],
+            'status' => ['from' => null, 'to' => 'pending'],
         ]);
 
         Auth::login($user);
@@ -66,6 +73,8 @@ class AuthController extends Controller
         if ($user->isPending()) {
             return redirect()->route('pending-approval');
         }
+
+        AuditLog::record($user, $user, AuditAction::LoggedIn);
 
         return redirect()->route($user->homeRouteName());
     }

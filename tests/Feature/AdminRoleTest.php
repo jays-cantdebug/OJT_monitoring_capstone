@@ -62,7 +62,7 @@ class AdminRoleTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function test_admin_lands_on_the_deans_list_after_login(): void
+    public function test_admin_lands_on_the_dashboard_after_login(): void
     {
         $admin = User::factory()->admin()->create(['password' => bcrypt('password')]);
 
@@ -71,7 +71,7 @@ class AdminRoleTest extends TestCase
             'password' => 'password',
         ]);
 
-        $response->assertRedirect(route('admin.deans'));
+        $response->assertRedirect(route('admin.dashboard'));
     }
 
     public function test_dean_created_notification_persists_and_is_readable_by_the_new_dean(): void

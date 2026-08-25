@@ -51,7 +51,7 @@
                                 <p class="truncate text-xs text-black/40">{{ $dean->email }}</p>
                             </div>
                             <span class="shrink-0 inline-flex items-center rounded-full bg-navy/10 px-2.5 py-1 text-xs font-semibold text-navy">
-                                {{ $dean->department->value }}
+                                {{ $dean->department->label() }}
                             </span>
                         </div>
                         <div class="mt-3 flex justify-end">
@@ -104,7 +104,7 @@
                             <td class="px-6 py-4 text-black/40">{{ $dean->email }}</td>
                             <td class="px-6 py-4">
                                 <span class="inline-flex items-center rounded-full bg-navy/10 px-2.5 py-1 text-xs font-semibold text-navy">
-                                    {{ $dean->department->value }}
+                                    {{ $dean->department->label() }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-right">

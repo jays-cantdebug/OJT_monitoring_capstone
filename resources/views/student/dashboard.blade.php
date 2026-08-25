@@ -13,7 +13,7 @@
         @endif
         <div>
             <p class="font-bold text-navy">{{ auth()->user()->name }}</p>
-            <p class="text-sm text-black/60">BS in Computer Science</p>
+            <p class="text-sm text-black/60">{{ auth()->user()->department?->programLabel() }}</p>
         </div>
     </div>
 

@@ -58,7 +58,7 @@
                     >
                         <option value="" disabled {{ old('department') ? '' : 'selected' }}>Select a department</option>
                         @foreach (App\Enums\Department::cases() as $department)
-                            <option value="{{ $department->value }}" @selected(old('department') === $department->value)>{{ $department->value }}</option>
+                            <option value="{{ $department->value }}" @selected(old('department') === $department->value)>{{ $department->label() }}</option>
                         @endforeach
                     </select>
                     @error('department')

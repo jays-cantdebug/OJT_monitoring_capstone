@@ -83,7 +83,7 @@
                     @endif
                     <div class="min-w-0">
                         <p class="truncate text-sm font-medium text-white">{{ auth()->user()->name }}</p>
-                        <p class="truncate text-[11px] text-white/40">BS in Computer Science</p>
+                        <p class="truncate text-[11px] text-white/40">{{ auth()->user()->department?->programLabel() }}</p>
                     </div>
                 </div>
                 <form method="POST" action="{{ route('logout') }}">

@@ -37,7 +37,7 @@
             @foreach ($departmentRows as $row)
                 <div class="p-4 flex items-center justify-between">
                     <span class="inline-flex items-center rounded-full bg-navy/10 px-2.5 py-1 text-xs font-semibold text-navy">
-                        {{ $row['department']->value }}
+                        {{ $row['department']->label() }}
                     </span>
                     <div class="text-right text-sm">
                         <p class="text-black">{{ $row['studentCount'] }} students</p>
@@ -60,7 +60,7 @@
                     <tr class="hover:bg-light-gray/40 transition">
                         <td class="px-6 py-4">
                             <span class="inline-flex items-center rounded-full bg-navy/10 px-2.5 py-1 text-xs font-semibold text-navy">
-                                {{ $row['department']->value }}
+                                {{ $row['department']->label() }}
                             </span>
                         </td>
                         <td class="px-6 py-4 text-black">{{ $row['studentCount'] }}</td>

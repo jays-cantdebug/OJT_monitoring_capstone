@@ -9,7 +9,7 @@
                 <x-heroicon-o-shield-check class="h-5 w-5" />
             </div>
             <div>
-                <p class="font-bold text-navy">{{ auth()->user()->department->value }} Dashboard Active</p>
+                <p class="font-bold text-navy">{{ auth()->user()->department->label() }} Dashboard Active</p>
                 <p class="text-xs text-black/60">These stats are filtered automatically to show only the students assigned to your supervision.</p>
             </div>
         </div>

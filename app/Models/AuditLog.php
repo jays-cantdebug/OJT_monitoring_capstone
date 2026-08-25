@@ -28,12 +28,16 @@ class AuditLog extends Model
 
     public function actor(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'actor_id');
+        // withTrashed() so entries stay readable after the actor's account
+        // is later soft-deleted (see User::$SoftDeletes) - without it this
+        // relation silently returns null and the audit views blow up
+        // dereferencing ->name.
+        return $this->belongsTo(User::class, 'actor_id')->withTrashed();
     }
 
     public function subject(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'subject_id');
+        return $this->belongsTo(User::class, 'subject_id')->withTrashed();
     }
 
     /**

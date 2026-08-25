@@ -54,6 +54,27 @@
 
                 Their current password will stop working immediately, and a new one will be generated and shown here once.
             </x-confirm-modal>
+            <x-confirm-modal
+                title="Delete {{ $student->name }}'s account?"
+                confirm-text="Delete Account"
+                confirm-class="bg-danger hover:bg-danger/90"
+                icon="trash"
+                icon-class="bg-danger/10 text-danger"
+                method="DELETE"
+                :action="route('dean.students.destroy', $student)"
+            >
+                <x-slot:trigger>
+                    <button
+                        type="button"
+                        class="inline-flex items-center gap-1.5 rounded-md bg-danger/10 px-3 py-1.5 text-xs font-semibold text-danger hover:bg-danger/20"
+                    >
+                        <x-heroicon-o-trash class="h-4 w-4" />
+                        Delete Account
+                    </button>
+                </x-slot:trigger>
+
+                This removes {{ $student->name }} from the active roster. Their DTR history, reports, and audit trail are kept, and their account can no longer log in.
+            </x-confirm-modal>
             <a href="{{ route('dean.students') }}" class="text-xs font-medium text-navy hover:underline">
                 &larr; Back to Student Interns
             </a>

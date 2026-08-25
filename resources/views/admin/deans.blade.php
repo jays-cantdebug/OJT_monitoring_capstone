@@ -54,6 +54,29 @@
                                 {{ $dean->department->value }}
                             </span>
                         </div>
+                        <div class="mt-3 flex justify-end">
+                            <x-confirm-modal
+                                title="Delete {{ $dean->name }}'s account?"
+                                confirm-text="Delete Account"
+                                confirm-class="bg-danger hover:bg-danger/90"
+                                icon="trash"
+                                icon-class="bg-danger/10 text-danger"
+                                method="DELETE"
+                                :action="route('admin.deans.destroy', $dean)"
+                            >
+                                <x-slot:trigger>
+                                    <button
+                                        type="button"
+                                        class="inline-flex items-center gap-1.5 rounded-md bg-danger/10 px-3 py-1.5 text-xs font-semibold text-danger hover:bg-danger/20"
+                                    >
+                                        <x-heroicon-o-trash class="h-4 w-4" />
+                                        Delete
+                                    </button>
+                                </x-slot:trigger>
+
+                                This removes {{ $dean->name }} from active Dean accounts. Their historical records and audit trail are kept.
+                            </x-confirm-modal>
+                        </div>
                     </div>
                 @endforeach
             </div>
@@ -64,6 +87,7 @@
                         <th class="px-6 py-3 text-xs font-bold uppercase tracking-wide">Name</th>
                         <th class="px-6 py-3 text-xs font-bold uppercase tracking-wide">Email</th>
                         <th class="px-6 py-3 text-xs font-bold uppercase tracking-wide">Department</th>
+                        <th class="px-6 py-3 text-xs font-bold uppercase tracking-wide"><span class="sr-only">Actions</span></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-light-gray">
@@ -82,6 +106,29 @@
                                 <span class="inline-flex items-center rounded-full bg-navy/10 px-2.5 py-1 text-xs font-semibold text-navy">
                                     {{ $dean->department->value }}
                                 </span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <x-confirm-modal
+                                    title="Delete {{ $dean->name }}'s account?"
+                                    confirm-text="Delete Account"
+                                    confirm-class="bg-danger hover:bg-danger/90"
+                                    icon="trash"
+                                    icon-class="bg-danger/10 text-danger"
+                                    method="DELETE"
+                                    :action="route('admin.deans.destroy', $dean)"
+                                >
+                                    <x-slot:trigger>
+                                        <button
+                                            type="button"
+                                            class="inline-flex items-center gap-1.5 rounded-md bg-danger/10 px-3 py-1.5 text-xs font-semibold text-danger hover:bg-danger/20"
+                                        >
+                                            <x-heroicon-o-trash class="h-4 w-4" />
+                                            Delete
+                                        </button>
+                                    </x-slot:trigger>
+
+                                    This removes {{ $dean->name }} from active Dean accounts. Their historical records and audit trail are kept.
+                                </x-confirm-modal>
                             </td>
                         </tr>
                     @endforeach

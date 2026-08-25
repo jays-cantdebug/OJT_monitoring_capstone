@@ -101,6 +101,7 @@ Route::prefix('dean')->name('dean.')->middleware(['auth', 'approved', 'role:dean
     Route::get('/students/{student}/edit', [StudentProfileController::class, 'edit'])->name('students.edit');
     Route::put('/students/{student}', [StudentProfileController::class, 'update'])->name('students.update');
     Route::post('/students/{student}/reset-password', [StudentProfileController::class, 'resetPassword'])->name('students.reset-password');
+    Route::delete('/students/{student}', [StudentProfileController::class, 'destroy'])->name('students.destroy');
 
     Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance');
 
@@ -126,6 +127,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'approved', 'role:ad
     Route::get('/deans', [DeanAccountController::class, 'index'])->name('deans');
     Route::get('/deans/create', [DeanAccountController::class, 'create'])->name('deans.create');
     Route::post('/deans', [DeanAccountController::class, 'store'])->name('deans.store');
+    Route::delete('/deans/{dean}', [DeanAccountController::class, 'destroy'])->name('deans.destroy');
 
     Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs');
 

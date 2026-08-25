@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\CreateDeanAccountRequest;
 use App\Models\AuditLog;
 use App\Models\User;
 use App\Notifications\DeanAccountCreatedNotification;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -54,6 +55,17 @@ class DeanAccountController extends Controller
                 'password' => $password,
             ],
         ]);
+    }
+
+    public function destroy(User $dean): RedirectResponse
+    {
+        abort_unless($dean->isDean(), 404);
+
+        $dean->delete();
+
+        AuditLog::record(auth()->user(), $dean, AuditAction::DeletedDeanAccount);
+
+        return redirect()->route('admin.deans')->with('status', "{$dean->name}'s account was deleted.");
     }
 
     private function deans()

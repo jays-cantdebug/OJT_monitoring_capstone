@@ -85,6 +85,17 @@ class StudentProfileController extends Controller
         ]);
     }
 
+    public function destroy(User $student): RedirectResponse
+    {
+        abort_unless($this->isManageable($student), 404);
+
+        $student->delete();
+
+        AuditLog::record(auth()->user(), $student, AuditAction::DeletedStudentAccount);
+
+        return redirect()->route('dean.students')->with('status', "{$student->name}'s account was deleted.");
+    }
+
     /**
      * A student is only manageable by a Dean if they're a Student Intern in
      * that Dean's own department - blocks a Dean from viewing/editing

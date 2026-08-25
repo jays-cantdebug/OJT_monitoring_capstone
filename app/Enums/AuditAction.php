@@ -12,6 +12,8 @@ enum AuditAction: string
     case RejectedStudentAccount = 'rejected_student_account';
     case ResetStudentPassword = 'reset_student_password';
     case UpdatedProfile = 'updated_profile';
+    case DeletedDeanAccount = 'deleted_dean_account';
+    case DeletedStudentAccount = 'deleted_student_account';
 
     public function label(): string
     {
@@ -24,6 +26,8 @@ enum AuditAction: string
             self::RejectedStudentAccount => 'Rejected Student Account',
             self::ResetStudentPassword => 'Reset Student Password',
             self::UpdatedProfile => 'Updated Profile',
+            self::DeletedDeanAccount => 'Deleted Dean Account',
+            self::DeletedStudentAccount => 'Deleted Student Account',
         };
     }
 }

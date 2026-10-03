@@ -189,19 +189,55 @@ function avatarHtml(person) {
 
 // The dot's color encodes whether this position is a real-time ping
 // (success, green) or a fallback coordinate because no live update is
-// currently available (warning, amber) - see hasLivePing.
+// currently available (warning, amber) - see hasLivePing. A red ring around
+// the avatar means the position is outside the student's company geofence.
 function markerIcon(L, person) {
     const dotColor = person.hasLivePing ? 'bg-success' : 'bg-warning';
+    const outsideRing = person.outsideGeofence
+        ? '<span class="absolute -inset-1 rounded-full ring-2 ring-danger"></span>'
+        : '';
 
     return L.divIcon({
         className: '',
         html: `<span class="relative block h-9 w-9">
+            ${outsideRing}
             ${avatarHtml(person)}
             <span class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ${dotColor} ring-2 ring-white"></span>
         </span>`,
         iconSize: [36, 36],
         iconAnchor: [18, 18],
     });
+}
+
+// Leaflet draws circles as SVG paths, so these need real color values
+// rather than Tailwind classes - kept in sync with tailwind.config.js.
+const NAVY = '#14213D';
+const DANGER = '#DC2626';
+
+function geofenceCircleStyle(outside) {
+    const color = outside ? DANGER : NAVY;
+
+    return { color, fillColor: color, weight: 1.5, opacity: 0.6, fillOpacity: 0.08 };
+}
+
+// Shared by liveMap, myLocationMap and geofencePicker so the company
+// boundary looks the same wherever it's drawn. Pass null for the geofence
+// to remove an existing circle (e.g. the Dean removed the pin).
+function upsertGeofenceCircle(L, map, circle, geofence, outside) {
+    if (!geofence) {
+        if (circle) {
+            map.removeLayer(circle);
+        }
+        return null;
+    }
+
+    const center = [geofence.latitude, geofence.longitude];
+
+    if (circle) {
+        return circle.setLatLng(center).setRadius(geofence.radius).setStyle(geofenceCircleStyle(outside));
+    }
+
+    return L.circle(center, { radius: geofence.radius, interactive: false, ...geofenceCircleStyle(outside) });
 }
 
 // Used by locationLightbox for the Attendance History "View Location" map -
@@ -223,7 +259,9 @@ Alpine.data('liveMap', (initialOnDuty, department) => {
     // proxy (plain closure variables, not `this` properties) - wrapping
     // them in Alpine's reactivity is a known source of breakage.
     let map = null;
+    let L = null;
     const markers = {};
+    const circles = {};
 
     // Tracks which student the search box last flew the map to, so typing
     // further characters that still resolve to the same single match
@@ -244,9 +282,13 @@ Alpine.data('liveMap', (initialOnDuty, department) => {
         const locationNote = student.hasLivePing
             ? ''
             : '<p class="mt-1 text-xs text-warning">Time In location &mdash; awaiting first live update</p>';
+        const geofenceNote = student.outsideGeofence
+            ? '<p class="mt-1 text-xs font-semibold text-danger">Outside company geofence</p>'
+            : '';
 
         return `<p class="font-semibold text-navy">${escapeHtml(student.name)}</p>
             ${locationNote}
+            ${geofenceNote}
             <a href="${profileUrl(student)}" class="text-xs font-medium text-navy hover:underline">View Profile &rarr;</a>`;
     }
 
@@ -267,6 +309,8 @@ Alpine.data('liveMap', (initialOnDuty, department) => {
             markers[student.userId] = L.marker(latLng, { icon: markerIcon(L, student) })
                 .bindPopup(popupHtml(student));
         }
+
+        circles[student.userId] = upsertGeofenceCircle(L, map, circles[student.userId], student.geofence, student.outsideGeofence);
     }
 
     // Briefly rings the marker's icon element so a search match is obvious
@@ -317,25 +361,28 @@ Alpine.data('liveMap', (initialOnDuty, department) => {
         // the map's visible pins always match the filtered list below it.
         syncMarkerVisibility() {
             this.students.forEach((student) => {
-                const marker = markers[student.userId];
-
-                if (!marker) {
-                    return;
-                }
-
                 const shouldShow = matchesSearch(student, this.search);
-                const isShown = map.hasLayer(marker);
 
-                if (shouldShow && !isShown) {
-                    marker.addTo(map);
-                } else if (!shouldShow && isShown) {
-                    map.removeLayer(marker);
-                }
+                // A student's geofence circle follows their marker, so a
+                // search never leaves stray circles for hidden students.
+                [markers[student.userId], circles[student.userId]].forEach((layer) => {
+                    if (!layer) {
+                        return;
+                    }
+
+                    const isShown = map.hasLayer(layer);
+
+                    if (shouldShow && !isShown) {
+                        layer.addTo(map);
+                    } else if (!shouldShow && isShown) {
+                        map.removeLayer(layer);
+                    }
+                });
             });
         },
 
         async init() {
-            const L = await import('leaflet');
+            L = await import('leaflet');
             const { initEcho } = await import('./echo');
 
             map = L.map(this.$refs.map).setView(
@@ -399,6 +446,8 @@ Alpine.data('liveMap', (initialOnDuty, department) => {
                         existing.longitude = event.longitude;
                         existing.lastPingAt = 'just now';
                         existing.hasLivePing = true;
+                        existing.geofence = event.geofence;
+                        existing.outsideGeofence = event.outsideGeofence;
                         upsertMarker(L, existing);
                     } else {
                         // A student who came on duty after this page loaded -
@@ -413,6 +462,8 @@ Alpine.data('liveMap', (initialOnDuty, department) => {
                             longitude: event.longitude,
                             lastPingAt: 'just now',
                             hasLivePing: true,
+                            geofence: event.geofence,
+                            outsideGeofence: event.outsideGeofence,
                         };
                         this.students.push(student);
                         upsertMarker(L, student);
@@ -430,28 +481,73 @@ Alpine.data('liveMap', (initialOnDuty, department) => {
 // geolocation, the same source the existing ping loop already uses. The
 // marker itself reuses the exact same markerIcon()/avatarHtml() helpers as
 // liveMap so the two maps render identically, not just similarly.
-Alpine.data('myLocationMap', (me, lastKnownLocation, onDuty) => {
+//
+// The company geofence is shown to the student too, so they can see the
+// same boundary the Dean reviews against. Inside/outside here is worked
+// out in the browser for display only; the server's own check on each
+// ping is the one that's recorded.
+Alpine.data('myLocationMap', (me, lastKnownLocation, onDuty, geofence) => {
     let map = null;
+    let L = null;
     let marker = null;
+    let circle = null;
     let watchId = null;
 
-    function popupHtml(hasLivePing) {
+    function popupHtml(hasLivePing, outside) {
         const locationNote = hasLivePing
             ? ''
             : '<p class="mt-1 text-xs text-warning">Last known location &mdash; not currently live</p>';
+        const geofenceNote = outside
+            ? '<p class="mt-1 text-xs font-semibold text-danger">Outside your company geofence</p>'
+            : '';
 
-        return `<p class="font-semibold text-navy">${escapeHtml(me.name)}</p>${locationNote}`;
+        return `<p class="font-semibold text-navy">${escapeHtml(me.name)}</p>${locationNote}${geofenceNote}`;
     }
 
     return {
         error: null,
+        outside: false,
 
-        async init() {
-            const L = await import('leaflet');
+        isOutside(latLng) {
+            return geofence !== null
+                && map.distance(latLng, [geofence.latitude, geofence.longitude]) > geofence.radius;
+        },
+
+        placeMarker(latLng, hasLivePing) {
+            this.outside = this.isOutside(latLng);
+            marker
+                .setLatLng(latLng)
+                .setIcon(markerIcon(L, { ...me, hasLivePing, outsideGeofence: this.outside }))
+                .setPopupContent(popupHtml(hasLivePing, this.outside));
+            circle?.setStyle(geofenceCircleStyle(this.outside));
+        },
+
+        // Called every time the map's tab becomes visible rather than from
+        // init(): Leaflet measures its container on creation, and a hidden
+        // tab panel measures as 0x0. The first call builds the map; later
+        // calls only re-measure, since the panel may have been resized
+        // (e.g. a phone rotated) while another tab was showing.
+        async show() {
+            if (map) {
+                map.invalidateSize();
+                return;
+            }
+
+            const leaflet = await import('leaflet');
+
+            // Guards against a second show() that arrived while the first
+            // was still awaiting the Leaflet import above.
+            if (map) {
+                return;
+            }
+
+            L = leaflet;
 
             const start = lastKnownLocation
                 ? [lastKnownLocation.latitude, lastKnownLocation.longitude]
-                : DEFAULT_MAP_CENTER;
+                : geofence
+                    ? [geofence.latitude, geofence.longitude]
+                    : DEFAULT_MAP_CENTER;
 
             map = L.map(this.$refs.map).setView(start, 15);
 
@@ -460,12 +556,18 @@ Alpine.data('myLocationMap', (me, lastKnownLocation, onDuty) => {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             }).addTo(map);
 
+            circle = upsertGeofenceCircle(L, map, null, geofence, false)?.addTo(map) ?? null;
+
             // Starts amber (not live) until the first successful
             // watchPosition callback flips it green - mirrors the Dean map's
             // amber-to-green flip when a student's first ping arrives.
             marker = L.marker(start, { icon: markerIcon(L, { ...me, hasLivePing: false }) })
-                .bindPopup(popupHtml(false))
+                .bindPopup(popupHtml(false, false))
                 .addTo(map);
+
+            if (lastKnownLocation) {
+                this.placeMarker(start, false);
+            }
 
             if (!onDuty) {
                 return;
@@ -485,10 +587,7 @@ Alpine.data('myLocationMap', (me, lastKnownLocation, onDuty) => {
                 (position) => {
                     this.error = null;
                     const latLng = [position.coords.latitude, position.coords.longitude];
-                    marker
-                        .setLatLng(latLng)
-                        .setIcon(markerIcon(L, { ...me, hasLivePing: true }))
-                        .setPopupContent(popupHtml(true));
+                    this.placeMarker(latLng, true);
                     map.setView(latLng);
                 },
                 (error) => {
@@ -502,6 +601,136 @@ Alpine.data('myLocationMap', (me, lastKnownLocation, onDuty) => {
             if (watchId !== null) {
                 navigator.geolocation.clearWatch(watchId);
             }
+        },
+    };
+});
+
+// Dean-only pin editor for a student's company geofence (Edit Student
+// page). The Dean always places the pin by hand: the optional address
+// search only moves the map near the address, because free-text Philippine
+// addresses geocode too unreliably to trust as the pin itself.
+Alpine.data('geofencePicker', (initial, recentTimeIns) => {
+    let map = null;
+    let L = null;
+    let pin = null;
+    let circle = null;
+
+    function pinIcon() {
+        return L.divIcon({
+            className: '',
+            html: '<span class="block h-5 w-5 rounded-full border-2 border-white bg-navy shadow-md"></span>',
+            iconSize: [20, 20],
+            iconAnchor: [10, 10],
+        });
+    }
+
+    // 7 decimals matches the decimal(10, 7) columns (~1 cm precision).
+    function round(value) {
+        return Math.round(value * 1e7) / 1e7;
+    }
+
+    return {
+        latitude: initial.latitude === null ? null : Number(initial.latitude),
+        longitude: initial.longitude === null ? null : Number(initial.longitude),
+        radius: initial.radius,
+        searching: false,
+        searchMessage: null,
+
+        get hasPin() {
+            return this.latitude !== null && this.longitude !== null;
+        },
+
+        geofence() {
+            return this.hasPin ? { latitude: this.latitude, longitude: this.longitude, radius: this.radius } : null;
+        },
+
+        setPin(latLng) {
+            this.latitude = round(latLng.lat);
+            this.longitude = round(latLng.lng);
+
+            if (pin) {
+                pin.setLatLng(latLng);
+            } else {
+                pin = L.marker(latLng, { icon: pinIcon(), draggable: true }).addTo(map);
+                // The circle follows the pin live while dragging; the saved
+                // coordinates only update once the drag ends.
+                pin.on('drag', (event) => circle?.setLatLng(event.target.getLatLng()));
+                pin.on('dragend', (event) => this.setPin(event.target.getLatLng()));
+            }
+
+            this.drawCircle();
+        },
+
+        drawCircle() {
+            const hadCircle = circle !== null;
+            circle = upsertGeofenceCircle(L, map, circle, this.geofence(), false);
+
+            if (circle && !hadCircle) {
+                circle.addTo(map);
+            }
+        },
+
+        clearPin() {
+            this.latitude = null;
+            this.longitude = null;
+
+            if (pin) {
+                map.removeLayer(pin);
+                pin = null;
+            }
+
+            this.drawCircle();
+        },
+
+        async findAddress(address) {
+            this.searching = true;
+            this.searchMessage = null;
+
+            try {
+                const params = new URLSearchParams({ format: 'jsonv2', limit: '1', countrycodes: 'ph', q: address });
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?${params}`);
+                const results = response.ok ? await response.json() : [];
+
+                if (results.length) {
+                    map.flyTo([Number(results[0].lat), Number(results[0].lon)], 17);
+                    this.searchMessage = 'Moved the map to an approximate match. Click the exact building to place the pin.';
+                } else {
+                    this.searchMessage = 'That address could not be found. Pan and zoom the map, then click to place the pin.';
+                }
+            } catch {
+                this.searchMessage = 'Address search is unavailable right now. Pan and zoom the map, then click to place the pin.';
+            } finally {
+                this.searching = false;
+            }
+        },
+
+        async init() {
+            L = await import('leaflet');
+
+            map = L.map(this.$refs.map);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            }).addTo(map);
+
+            recentTimeIns.forEach((latLng) => {
+                L.circleMarker(latLng, {
+                    radius: 4, color: NAVY, weight: 1, opacity: 0.4, fillOpacity: 0.25, interactive: false,
+                }).addTo(map);
+            });
+
+            if (this.hasPin) {
+                this.setPin(L.latLng(this.latitude, this.longitude));
+                map.fitBounds(circle.getBounds(), { padding: [24, 24] });
+            } else if (recentTimeIns.length) {
+                map.fitBounds(recentTimeIns, { padding: [32, 32], maxZoom: 17 });
+            } else {
+                map.setView(DEFAULT_MAP_CENTER, 15);
+            }
+
+            map.on('click', (event) => this.setPin(event.latlng));
+            this.$watch('radius', () => this.drawCircle());
         },
     };
 });

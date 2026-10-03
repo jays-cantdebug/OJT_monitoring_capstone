@@ -12,6 +12,8 @@ class GpsPing extends Model
         'dtr_entry_id',
         'latitude',
         'longitude',
+        'distance_from_company_m',
+        'outside_geofence',
         'recorded_at',
     ];
 
@@ -19,6 +21,7 @@ class GpsPing extends Model
     {
         return [
             'recorded_at' => 'datetime',
+            'outside_geofence' => 'boolean',
         ];
     }
 

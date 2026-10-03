@@ -33,6 +33,10 @@ class LiveMapController extends Controller
                     'longitude' => $latestPing?->longitude ?? $entry->time_in_longitude,
                     'lastPingAt' => $latestPing?->recorded_at?->diffForHumans(),
                     'hasLivePing' => $latestPing !== null,
+                    'geofence' => $student->studentProfile?->geofencePayload(),
+                    // Same fallback as the coordinate above: the Time In
+                    // check stands in until the first live ping arrives.
+                    'outsideGeofence' => $latestPing ? $latestPing->outside_geofence : $entry->time_in_outside_geofence,
                 ];
             });
 

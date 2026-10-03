@@ -18,7 +18,7 @@
         </a>
     </div>
 
-    <div class="max-w-lg bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-5">
+    <div class="max-w-2xl bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-5">
         <form method="POST" action="{{ route('dean.students.update', $student) }}" class="space-y-5">
             @csrf
             @method('PUT')
@@ -56,6 +56,83 @@
                     <span class="text-sm text-black">Mark as Verified</span>
                 </label>
                 <p class="mt-1 text-xs text-black/40">No workflow is attached to this yet &mdash; it's a simple status marker.</p>
+            </div>
+
+            <div
+                id="geofence"
+                class="border-t border-light-gray pt-5"
+                x-data="geofencePicker({{ Illuminate\Support\Js::from([
+                    'latitude' => old('company_latitude', $geofence['latitude'] ?? null),
+                    'longitude' => old('company_longitude', $geofence['longitude'] ?? null),
+                    'radius' => (int) old('geofence_radius_m', $geofenceRadius),
+                ]) }}, {{ Illuminate\Support\Js::from($recentTimeIns) }})"
+            >
+                <span class="block text-xs font-bold uppercase tracking-wide text-black/60">Company Location (Geofence)</span>
+                <p class="mt-1 text-xs text-black/40">
+                    Click the map to pin where {{ $student->name }} works, then drag the pin to adjust.
+                    Readings outside the circle are logged for your review &mdash; the student is never blocked from timing in or out.
+                </p>
+                <p class="mt-1 text-xs text-black/60">
+                    Student-entered address: {{ $profile->company_address ?: 'not provided' }}
+                </p>
+
+                <div class="mt-3 flex flex-wrap items-center gap-2">
+                    @if ($profile->company_address)
+                        <button
+                            type="button"
+                            @click="findAddress({{ Illuminate\Support\Js::from($profile->company_address) }})"
+                            :disabled="searching"
+                            class="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-navy ring-1 ring-light-gray hover:bg-light-gray/40 disabled:opacity-60"
+                        >
+                            <x-heroicon-o-magnifying-glass class="h-4 w-4" />
+                            <span x-text="searching ? 'Searching…' : 'Find address on map'"></span>
+                        </button>
+                    @endif
+                    <button
+                        type="button"
+                        x-show="hasPin"
+                        @click="clearPin()"
+                        class="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-danger ring-1 ring-light-gray hover:bg-danger/5"
+                    >
+                        <x-heroicon-o-x-mark class="h-4 w-4" />
+                        Remove pin
+                    </button>
+                </div>
+                <p x-show="searchMessage" x-cloak class="mt-2 text-xs text-black/60" x-text="searchMessage"></p>
+
+                <div class="relative mt-3 h-72 rounded-lg bg-light-gray overflow-hidden" x-ref="map"></div>
+                @if ($recentTimeIns->isNotEmpty())
+                    <p class="mt-1.5 text-[11px] text-black/40">Grey dots: this student's last {{ $recentTimeIns->count() }} Time In locations.</p>
+                @endif
+
+                <input type="hidden" name="company_latitude" :value="latitude ?? ''">
+                <input type="hidden" name="company_longitude" :value="longitude ?? ''">
+                @error('company_latitude')
+                    <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                @enderror
+
+                <div class="mt-4">
+                    <label for="geofence_radius_m" class="block text-xs font-bold uppercase tracking-wide text-black/60">
+                        Radius: <span x-text="radius"></span> m
+                    </label>
+                    <input
+                        type="range"
+                        id="geofence_radius_m"
+                        name="geofence_radius_m"
+                        min="{{ App\Support\Geofence::MIN_RADIUS_M }}"
+                        max="{{ App\Support\Geofence::MAX_RADIUS_M }}"
+                        step="10"
+                        x-model.number="radius"
+                        class="mt-2 block w-full accent-navy"
+                    >
+                    <div class="mt-1 flex justify-between text-[11px] text-black/40">
+                        <span>{{ App\Support\Geofence::MIN_RADIUS_M }} m</span>
+                        <span>{{ number_format(App\Support\Geofence::MAX_RADIUS_M / 1000) }} km</span>
+                    </div>
+                    @error('geofence_radius_m')
+                        <p class="mt-1 text-sm text-danger">{{ $message }}</p>
+                    @enderror
+                </div>
             </div>
 
             <div class="flex items-center gap-3 pt-2">

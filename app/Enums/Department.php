@@ -11,17 +11,17 @@ enum Department: string
     case IT = 'IT';
 
     /**
-     * Full name of the department/field, for institutional contexts
-     * (e.g. "Information Technology Department").
+     * Official college name, for institutional contexts
+     * (e.g. "College of Information Technology").
      */
     public function label(): string
     {
         return match ($this) {
-            self::EDUC => 'Education',
-            self::CRIM => 'Criminology',
-            self::BSBA => 'Business Administration',
-            self::HM => 'Hospitality Management',
-            self::IT => 'Information Technology',
+            self::EDUC => 'College of Education, Arts and Sciences',
+            self::CRIM => 'College of Criminal Justice Education',
+            self::BSBA => 'College of Business Administration',
+            self::HM => 'College of Hospitality Management',
+            self::IT => 'College of Information Technology',
         };
     }
 

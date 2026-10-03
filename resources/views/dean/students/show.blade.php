@@ -143,6 +143,56 @@
     </div>
 
     <div class="mt-4 bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-6">
+        <div class="flex flex-wrap items-start justify-between gap-2 mb-4">
+            <div>
+                <h3 class="text-sm font-semibold text-navy">Geofence Events</h3>
+                <p class="mt-1 text-xs text-black/40">
+                    @if ($profile->hasGeofence())
+                        Times this student was more than {{ $profile->geofence_radius_m }} m from the pinned company location. Logged for review only &mdash; nothing was blocked.
+                    @else
+                        No company location pinned yet, so location isn't being checked.
+                    @endif
+                </p>
+            </div>
+            <a href="{{ route('dean.students.edit', $student) }}#geofence" class="text-xs font-medium text-navy hover:underline shrink-0">
+                {{ $profile->hasGeofence() ? 'Edit company pin' : 'Pin company location' }} &rarr;
+            </a>
+        </div>
+
+        @if ($geofenceEvents->isEmpty())
+            <p class="text-sm text-black/60">No readings outside the geofence recorded.</p>
+        @else
+            <ul class="divide-y divide-light-gray">
+                @foreach ($geofenceEvents as $event)
+                    <li class="py-3 flex flex-wrap items-start justify-between gap-2">
+                        <div>
+                            <p class="text-sm text-black">
+                                <span class="font-medium">{{ $event['date'] }}</span>
+                                &middot;
+                                {{ $event['startedAtTimeIn'] ? 'Timed in outside' : 'Left' }} at {{ $event['leftAt']->format('g:i A') }}
+                                @if ($event['endedBy'] === 'returned')
+                                    &rarr; back inside at {{ $event['backAt']->format('g:i A') }}
+                                @elseif ($event['endedBy'] === 'time_out')
+                                    &rarr; still outside at Time Out ({{ $event['backAt']->format('g:i A') }})
+                                @endif
+                            </p>
+                            <p class="mt-0.5 text-xs text-black/60">
+                                Up to {{ number_format($event['maxDistance']) }} m away &middot; {{ $event['readings'] }} {{ Str::plural('reading', $event['readings']) }}
+                            </p>
+                        </div>
+                        @if ($event['endedBy'] === 'ongoing')
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-danger/10 px-2.5 py-1 text-xs font-semibold text-danger">
+                                <span class="h-1.5 w-1.5 rounded-full bg-danger"></span>
+                                Outside now
+                            </span>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </div>
+
+    <div class="mt-4 bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-6">
         <h3 class="text-sm font-semibold text-navy mb-4">Personal &amp; Guardian Information</h3>
         <p class="mb-4 text-xs text-black/40">Filled in by the student &mdash; read-only here.</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">

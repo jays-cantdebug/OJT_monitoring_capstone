@@ -14,6 +14,7 @@ enum AuditAction: string
     case UpdatedProfile = 'updated_profile';
     case DeletedDeanAccount = 'deleted_dean_account';
     case DeletedStudentAccount = 'deleted_student_account';
+    case UpdatedGeofence = 'updated_geofence';
 
     public function label(): string
     {
@@ -28,6 +29,7 @@ enum AuditAction: string
             self::UpdatedProfile => 'Updated Profile',
             self::DeletedDeanAccount => 'Deleted Dean Account',
             self::DeletedStudentAccount => 'Deleted Student Account',
+            self::UpdatedGeofence => 'Updated Company Geofence',
         };
     }
 }

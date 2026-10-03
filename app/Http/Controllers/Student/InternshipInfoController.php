@@ -18,8 +18,9 @@ class InternshipInfoController extends Controller
         $profile = $user->studentProfile ?? new StudentProfile;
         $openEntry = $user->openDtrEntry();
         $lastKnownLocation = $this->lastKnownLocation($user, $openEntry);
+        $geofence = $profile->geofencePayload();
 
-        return view('student.internship-info', compact('profile', 'openEntry', 'lastKnownLocation'));
+        return view('student.internship-info', compact('profile', 'openEntry', 'lastKnownLocation', 'geofence'));
     }
 
     /**

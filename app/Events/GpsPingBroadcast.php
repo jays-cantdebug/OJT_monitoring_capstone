@@ -45,6 +45,10 @@ class GpsPingBroadcast implements ShouldBroadcastNow
             'latitude' => $this->ping->latitude,
             'longitude' => $this->ping->longitude,
             'recorded_at' => $this->ping->recorded_at->toIso8601String(),
+            // Sent with every ping (not just once) so a pin the Dean moves
+            // mid-shift shows up on an already-open Live Map.
+            'geofence' => $this->ping->user->studentProfile?->geofencePayload(),
+            'outsideGeofence' => $this->ping->outside_geofence,
         ];
     }
 }

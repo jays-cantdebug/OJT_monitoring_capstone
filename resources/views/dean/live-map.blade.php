@@ -50,6 +50,10 @@
                             <span class="h-1.5 w-1.5 rounded-full bg-warning"></span>
                             Awaiting first ping
                         </span>
+                        <span x-show="student.outsideGeofence" class="inline-flex items-center gap-1.5 rounded-full bg-danger/10 px-2.5 py-1 text-xs font-semibold text-danger">
+                            <span class="h-1.5 w-1.5 rounded-full bg-danger"></span>
+                            Outside geofence
+                        </span>
                     </li>
                 </template>
                 <li x-show="students.length === 0" class="py-6 text-center text-sm text-black/60">

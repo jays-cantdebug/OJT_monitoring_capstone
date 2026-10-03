@@ -6,6 +6,7 @@ use App\Events\GpsPingBroadcast;
 use App\Http\Controllers\Controller;
 use App\Models\GpsPing;
 use App\Support\CoordinateRules;
+use App\Support\Geofence;
 use Illuminate\Broadcasting\BroadcastException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -27,11 +28,16 @@ class GpsPingController extends Controller
 
         $coordinates = $request->validate(CoordinateRules::rules());
 
+        // Log-only: a ping outside the geofence is flagged, never rejected.
+        $geofence = Geofence::check($user->studentProfile, $coordinates['latitude'], $coordinates['longitude']);
+
         $ping = GpsPing::create([
             'user_id' => $user->id,
             'dtr_entry_id' => $entry->id,
             'latitude' => $coordinates['latitude'],
             'longitude' => $coordinates['longitude'],
+            'distance_from_company_m' => $geofence['distance'],
+            'outside_geofence' => $geofence['outside'],
             'recorded_at' => now(),
         ]);
 

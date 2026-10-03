@@ -13,6 +13,8 @@ class DtrEntry extends Model
         'time_in',
         'time_in_latitude',
         'time_in_longitude',
+        'time_in_distance_from_company_m',
+        'time_in_outside_geofence',
         'time_out',
         'time_out_latitude',
         'time_out_longitude',
@@ -23,6 +25,7 @@ class DtrEntry extends Model
         return [
             'time_in' => 'datetime',
             'time_out' => 'datetime',
+            'time_in_outside_geofence' => 'boolean',
         ];
     }
 

@@ -17,6 +17,23 @@
         </div>
     </div>
 
+    @unless ($hasSubmittedReportToday)
+        <div class="mb-6 flex items-start gap-4 rounded-xl bg-white p-5 shadow-sm ring-1 ring-light-gray">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning/10 text-warning">
+                <x-heroicon-o-document-text class="h-5 w-5" />
+            </div>
+            <div>
+                <p class="font-bold text-navy">You have not submitted today's daily report.</p>
+                @unless ($hasCompletedDtrEntryToday)
+                    <p class="mt-1 text-sm text-black/60"><a href="{{ route('student.time') }}" class="font-medium text-navy hover:underline">Time In and Time Out first</a></p>
+                @endunless
+                <a href="{{ route('student.reports') }}" class="mt-3 inline-flex items-center gap-3 rounded-lg bg-gold/5 px-4 py-2 hover:bg-gold/10">
+                    <span class="text-sm font-medium text-black">Daily Report</span>
+                </a>
+            </div>
+        </div>
+    @endunless
+
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-light-gray">
             <div class="flex items-start justify-between">

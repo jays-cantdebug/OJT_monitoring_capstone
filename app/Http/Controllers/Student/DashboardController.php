@@ -26,6 +26,15 @@ class DashboardController extends Controller
             ->limit(3)
             ->get();
 
-        return view('student.dashboard', compact('openEntry', 'daysLoggedThisMonth', 'recentEntries'));
+        $hasSubmittedReportToday = $user->accomplishmentReports()
+            ->whereDate('report_date', today())
+            ->exists();
+
+        $hasCompletedDtrEntryToday = $user->dtrEntries()
+            ->whereDate('time_in', today())
+            ->whereNotNull('time_out')
+            ->exists();
+
+        return view('student.dashboard', compact('openEntry', 'daysLoggedThisMonth', 'recentEntries', 'hasSubmittedReportToday', 'hasCompletedDtrEntryToday'));
     }
 }

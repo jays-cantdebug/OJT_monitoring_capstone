@@ -93,6 +93,21 @@ class StudentMetrics
             ->count();
     }
 
+    /**
+     * Approved students who completed a DTR entry today but have no report
+     * for today - the same rule as pendingReportsCount(), as a name list.
+     */
+    public static function studentsWithoutReportToday(Department $department): Collection
+    {
+        return User::where('role', 'student_intern')
+            ->where('status', 'approved')
+            ->where('department', $department)
+            ->whereHas('dtrEntries', fn ($query) => $query->whereDate('time_in', today())->whereNotNull('time_out'))
+            ->whereDoesntHave('accomplishmentReports', fn ($query) => $query->whereDate('report_date', today()))
+            ->orderBy('name')
+            ->get();
+    }
+
     public static function totalHoursLogged(Department $department): int
     {
         return intdiv(self::completedSeconds($department), 3600);

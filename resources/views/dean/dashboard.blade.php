@@ -89,6 +89,25 @@
         </div>
     </div>
 
+    <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-5 mb-4">
+        <h2 class="text-sm font-semibold text-navy mb-3">No Report Today ({{ $studentsWithoutReportToday->count() }})</h2>
+        <ul class="space-y-1">
+            @forelse ($studentsWithoutReportToday as $student)
+                <li class="flex items-start gap-3 rounded-lg px-2 py-2 -mx-2 hover:bg-light-gray/40 transition">
+                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-warning/10 text-warning">
+                        <x-heroicon-o-document-text class="h-4 w-4" />
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-sm text-black">{{ $student->name }}</p>
+                        <p class="mt-0.5 text-xs text-black/40">Completed Time In/Out today, no daily report yet.</p>
+                    </div>
+                </li>
+            @empty
+                <li class="py-4 text-sm text-black/40">Every intern who completed a shift today has submitted a report.</li>
+            @endforelse
+        </ul>
+    </div>
+
     <div class="bg-white rounded-xl shadow-sm ring-1 ring-light-gray p-5">
         <h2 class="text-sm font-semibold text-navy mb-3">Recent Activity</h2>
         <ul class="space-y-1">

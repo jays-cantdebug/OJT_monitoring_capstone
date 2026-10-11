@@ -52,6 +52,12 @@ class AccomplishmentReportController extends Controller
             'problems_encountered' => ['required', 'string', 'max:5000'],
             'learnings_acquired' => ['required', 'string', 'max:5000'],
             'photo' => ['required', 'image', 'max:5120'],
+            // report_date is always set server-side below; a posted value is
+            // only checked so a tampered past/future date is rejected
+            // instead of silently ignored.
+            'report_date' => ['nullable', 'date_equals:'.today()->toDateString()],
+        ], [
+            'report_date.date_equals' => "Reports can only be submitted for today's date.",
         ]);
 
         $photoPath = $request->file('photo')->store('accomplishment-reports', 'public');
